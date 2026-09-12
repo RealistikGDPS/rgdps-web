@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ status_code }} · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="hero narrow">
+  <p class="eyebrow">Error {{ status_code }}</p>
+  <h1>Whoops.</h1>
+  <p class="lead">{{ message }}</p>
+  <p><a class="button" href="/">Back home</a></p>
+</section>
+{% endblock %}

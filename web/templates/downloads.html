@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Downloads · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="hero narrow">
+  <p class="eyebrow">Get playing</p>
+  <h1>Downloads</h1>
+  <p class="lead">A copy of Geometry Dash 2.2 pointed at {{ site_name }}. Your official account and levels stay untouched; this is a separate game with its own accounts.</p>
+</section>
+<section class="two-up">
+  <article class="card download">
+    <h2>PC</h2>
+    <p>Windows build. Unzip anywhere and run <code>GeometryDash.exe</code>. Works alongside your Steam copy.</p>
+    <a class="button" href="{{ download_pc_url }}">Download for PC</a>
+  </article>
+  <article class="card download">
+    <h2>Android</h2>
+    <p>Installs as its own app next to the official one. Allow installs from unknown sources when asked.</p>
+    <a class="button" href="{{ download_android_url }}">Download for Android</a>
+  </article>
+</section>
+<section class="card narrow">
+  <h3>First launch</h3>
+  <ol class="steps">
+    <li>Open the game and go to the account screen.</li>
+    <li>Register in game, or <a href="/register">register here</a> first and log in with the same details.</li>
+    <li>Had an account on the old 2.1 server? <a href="/login">Log in here</a> once and it will work in 2.2 as well.</li>
+  </ol>
+</section>
+{% endblock %}

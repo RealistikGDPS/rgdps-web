@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, error_box with context %}
+{% block title %}Log in · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="form-card card">
+  <p class="eyebrow">Welcome back</p>
+  <h1>Log in</h1>
+  <p class="muted">Use the same username and password as in the game. Accounts from the old 2.1 server are upgraded the moment you log in here.</p>
+  {% if error is defined %}{{ error_box(error) }}{% endif %}
+  <form method="post" action="/login{% if next != '/' %}?next={{ next|urlencode }}{% endif %}">
+    {{ csrf() }}
+    <label>Username<input name="username" value="{{ username }}" autocomplete="username" required maxlength="20"></label>
+    <label>Password<span class="password"><input name="password" type="password" autocomplete="current-password" required maxlength="64"><button type="button" class="reveal" aria-label="Show password">Show</button></span></label>
+    <button class="button wide" type="submit">Log in</button>
+  </form>
+  <p class="muted">No account yet? <a href="/register">Register</a>.</p>
+</section>
+{% endblock %}

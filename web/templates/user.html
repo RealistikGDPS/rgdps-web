@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import glyph, icon %}
+{% set profile = payload.profile %}
+{% set player = profile.user %}
+{% set stats = profile.stats %}
+{% block title %}{{ player.username }} · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="profile-head card">
+  {{ icon(stats, 128, alt=player.username ~ "'s icon") }}
+  <div>
+    <h1>{{ player.username }}</h1>
+    <p class="chips">
+      {% if profile.mod_level|mod_level %}<span class="chip mod">{{ profile.mod_level|mod_level }}</span>{% endif %}
+      {% for role in profile.roles if role.name != "default" %}<span class="chip">{{ role.name|replace("_", " ") }}</span>{% endfor %}
+      <span class="chip plain">#{{ player.id }}</span>
+    </p>
+    <p class="muted">Joined {{ player.registered_at|date }}{% if player.last_seen_at %} · last seen {{ player.last_seen_at|age }} ago{% endif %}</p>
+    {% if player.youtube or player.twitter or player.twitch or player.discord or player.instagram or player.tiktok %}
+    <p class="socials">
+      {% if player.youtube %}<a href="https://www.youtube.com/channel/{{ player.youtube }}" rel="noopener">YouTube</a>{% endif %}
+      {% if player.twitter %}<a href="https://x.com/{{ player.twitter }}" rel="noopener">X</a>{% endif %}
+      {% if player.twitch %}<a href="https://www.twitch.tv/{{ player.twitch }}" rel="noopener">Twitch</a>{% endif %}
+      {% if player.instagram %}<a href="https://www.instagram.com/{{ player.instagram }}" rel="noopener">Instagram</a>{% endif %}
+      {% if player.tiktok %}<a href="https://www.tiktok.com/@{{ player.tiktok }}" rel="noopener">TikTok</a>{% endif %}
+      {% if player.discord %}<span>Discord: {{ player.discord }}</span>{% endif %}
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="stat-strip">
+  <div class="stat"><span class="value">{{ glyph("stars", "stars") }}{{ stats.stars|number }}</span><span class="label">stars</span></div>
+  <div class="stat"><span class="value">{{ glyph("moons", "moons") }}{{ stats.moons|number }}</span><span class="label">moons</span></div>
+  <div class="stat"><span class="value">{{ glyph("demons", "demons") }}{{ stats.demons|number }}</span><span class="label">demons</span></div>
+  <div class="stat"><span class="value">{{ glyph("secret_coins", "coins") }}{{ stats.secret_coins|number }}</span><span class="label">secret coins</span></div>
+  <div class="stat"><span class="value">{{ glyph("user_coins", "coins") }}{{ stats.user_coins|number }}</span><span class="label">user coins</span></div>
+  <div class="stat"><span class="value">{{ glyph("diamonds", "diamonds") }}{{ stats.diamonds|number }}</span><span class="label">diamonds</span></div>
+  <div class="stat"><span class="value">{{ glyph("creator_points", "cp") }}{{ stats.creator_points|number }}</span><span class="label">creator points</span></div>
+  <div class="stat"><span class="value">{{ glyph("levels") }}{{ payload.level_count|number }}</span><span class="label">levels</span></div>
+</section>
+
+<section class="two-up">
+  <div class="card">
+    <h3>Rankings</h3>
+    <ul class="ranks">
+      {% for option in leaderboard_kinds %}
+      <li>
+        <a href="/leaderboards/{{ option }}">{{ glyph(option.value, option.value) }} {{ option|leaderboard_kind }}</a>
+        {% if option in profile.ranks %}<span class="rank-value">#{{ profile.ranks[option]|number }}</span>{% else %}<span class="muted">unranked</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Demons</h3>
+    <ul class="bars compact">
+      {% for label, count in [("Easy", stats.demons_easy), ("Medium", stats.demons_medium), ("Hard", stats.demons_hard), ("Insane", stats.demons_insane), ("Extreme", stats.demons_extreme)] %}
+      <li><span class="bar-label">{{ label }}</span><span class="bar-track"><span class="bar-fill demon" style="width: {{ (count / stats.demons * 100) if stats.demons else 0 }}%"></span></span><span class="bar-value">{{ count|number }}</span></li>
+      {% endfor %}
+    </ul>
+    <p class="muted small">Platformer: {{ (stats.demons_easy_platformer + stats.demons_medium_platformer + stats.demons_hard_platformer + stats.demons_insane_platformer + stats.demons_extreme_platformer)|number }} · weekly {{ stats.demons_weekly|number }} · gauntlet {{ stats.demons_gauntlet|number }}</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><h2>Icons</h2></div>
+  <div class="icon-wall">
+    {% for option in icon_kinds %}
+    <figure class="card">
+      {{ icon(stats, 96, option, option|icon_kind) }}
+      <figcaption>{{ option|icon_kind }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

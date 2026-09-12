@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_macros.html" import glyph, level_card %}
+{% block content %}
+{% set totals = payload.snapshot.totals %}
+<section class="hero">
+  <p class="eyebrow">Geometry Dash 2.2 private server</p>
+  <h1>Realistik<span class="accent">GDPS</span></h1>
+  <p class="lead">Your levels, your leaderboards, your scene. A from-scratch server built for speed and fairness, playable on PC and Android.</p>
+  <p class="actions">
+    <a class="button" href="/downloads">Download</a>
+    {% if not viewer %}<a class="button ghost" href="/register">Create an account</a>{% else %}<a class="button ghost" href="/users/{{ viewer.id }}">Your profile</a>{% endif %}
+  </p>
+</section>
+
+<section class="stat-strip">
+  <div class="stat"><span class="value">{{ totals.users|number }}</span><span class="label">{{ glyph("players") }} players</span></div>
+  <div class="stat"><span class="value">{{ totals.levels|number }}</span><span class="label">{{ glyph("levels") }} levels</span></div>
+  <div class="stat"><span class="value">{{ totals.rated_levels|number }}</span><span class="label">{{ glyph("stars", "stars") }} rated</span></div>
+  <div class="stat"><span class="value">{{ totals.featured_levels|number }}</span><span class="label">{{ glyph("creator_points", "cp") }} featured</span></div>
+  <div class="stat"><span class="value">{{ totals.comments|number }}</span><span class="label">{{ glyph("comments") }} comments</span></div>
+</section>
+
+{% if payload.featured.levels %}
+<section>
+  <div class="section-head"><h2>Featured</h2></div>
+  <div class="grid">
+    {% for level in payload.featured.levels %}{{ level_card(level, payload.featured.creators.get(level.user_id)) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section>
+  <div class="section-head"><h2>Last 30 days</h2><span class="muted">Refreshed every few minutes</span></div>
+  <div class="charts">
+    {% for chart in payload.charts %}
+    <div class="card chart">
+      <div class="chart-head"><h3>{{ chart.title }}</h3><span class="value">{{ chart.total|number }}</span></div>
+      <svg viewBox="0 0 300 100" preserveAspectRatio="none" role="img" aria-label="{{ chart.title }}, daily">
+        {% for point in chart.points %}
+        {% set height = (point.count / chart.peak * 96) if chart.peak else 0 %}
+        <rect x="{{ loop.index0 * 10 + 1 }}" y="{{ 100 - height }}" width="8" height="{{ height }}"><title>{{ point.day }}: {{ point.count }}</title></rect>
+        {% endfor %}
+      </svg>
+      <div class="chart-foot"><span>{{ chart.points[0].day|string }}</span><span>today</span></div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="two-up">
+  <div class="card">
+    <h3>Levels by difficulty</h3>
+    {% set spread = payload.snapshot.difficulties %}
+    {% set peak = spread|map(attribute="count")|max if spread else 0 %}
+    <ul class="bars">
+      {% for row in spread %}
+      <li>
+        <span class="bar-label">{{ row.label|difficulty }}</span>
+        <span class="bar-track"><span class="bar-fill {{ row.label|difficulty_class }}" style="width: {{ (row.count / peak * 100) if peak else 0 }}%"></span></span>
+        <span class="bar-value">{{ row.count|number }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Top creators</h3>
+    <ol class="ranked">
+      {% for creator in payload.snapshot.top_creators %}
+      <li>
+        <a href="/users/{{ creator.user_id }}">{{ creator.username }}</a>
+        <span class="muted">{{ creator.levels }} levels, {{ creator.rated }} rated</span>
+        <span class="cp">{{ glyph("creator_points", "cp") }} {{ creator.creator_points|number }}</span>
+      </li>
+      {% else %}
+      <li class="muted">No creators yet. Be the first.</li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><h2>Recently uploaded</h2></div>
+  <div class="grid">
+    {% for level in payload.recent.levels %}{{ level_card(level, payload.recent.creators.get(level.user_id)) }}{% else %}<p class="muted">Nothing has been uploaded yet.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

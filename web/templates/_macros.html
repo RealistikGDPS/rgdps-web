@@ -1,0 +1,34 @@
+{% macro glyph(name, class="") %}<svg class="glyph {{ class }}" aria-hidden="true"><use href="#g-{{ name }}"/></svg>{% endmacro %}
+
+{% macro icon(stats, size=64, kind=None, alt="") %}<img class="icon" src="{{ icon_url(stats, kind) }}" width="{{ size }}" height="{{ size }}" alt="{{ alt }}" loading="lazy">{% endmacro %}
+
+{% macro error_box(text) %}<p class="error" role="alert">{{ text }}</p>{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% endmacro %}
+
+{% macro pager(base, page, size, total) %}
+{% set last = ((total - 1) // size) + 1 if total > 0 else 1 %}
+<nav class="pager" aria-label="Pages">
+  {% if page > 1 %}<a href="{{ base }}?page={{ page - 1 }}">&larr; Previous</a>{% else %}<span></span>{% endif %}
+  <span class="muted">Page {{ page }} of {{ last }}</span>
+  {% if page < last %}<a href="{{ base }}?page={{ page + 1 }}">Next &rarr;</a>{% else %}<span></span>{% endif %}
+</nav>
+{% endmacro %}
+
+{% macro level_card(level, creator) %}
+<article class="card level {{ level.difficulty|difficulty_class }}">
+  <div class="level-head">
+    <h3>{{ level.name }}</h3>
+    {% if level.rating|rating %}<span class="tag rating-{{ level.rating|rating|lower }}">{{ level.rating|rating }}</span>{% elif level.is_featured %}<span class="tag featured">Featured</span>{% endif %}
+  </div>
+  <p class="muted">by {% if creator %}<a href="/users/{{ creator.id }}">{{ creator.username }}</a>{% else %}an unknown player{% endif %}</p>
+  <p class="level-meta">
+    <span class="badge diff">{{ level.difficulty|difficulty }}</span>
+    {% if level.stars %}<span>{{ glyph("stars", "stars") }} {{ level.stars }}</span>{% endif %}
+    <span>{{ glyph("downloads") }} {{ level.downloads|number }}</span>
+    <span>{{ glyph("likes") }} {{ level.likes|number }}</span>
+    <span class="muted">{{ level.length|length }}</span>
+  </p>
+  <p class="muted small">Uploaded {{ level.uploaded_at|age }} ago</p>
+</article>
+{% endmacro %}

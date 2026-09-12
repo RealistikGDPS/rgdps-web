@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import glyph, icon, pager %}
+{% block title %}{{ kind|leaderboard_kind }} leaderboard · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="section-head">
+  <h1>Leaderboards</h1>
+</section>
+<nav class="tabs" aria-label="Leaderboard">
+  {% for option in leaderboard_kinds %}
+  <a href="/leaderboards/{{ option }}" {% if option == kind %}class="active"{% endif %}>{{ glyph(option.value, option.value) }} {{ option|leaderboard_kind }}</a>
+  {% endfor %}
+</nav>
+<div class="card table-card">
+  <table class="board">
+    <thead><tr><th class="rank">#</th><th colspan="2">Player</th><th class="num">{{ kind|leaderboard_kind }}</th></tr></thead>
+    <tbody>
+    {% for entry in board.entries %}
+      <tr>
+        <td class="rank">{{ entry.rank }}</td>
+        <td class="icon-cell">{{ icon(entry.stats, 48) }}</td>
+        <td><a class="name" href="/users/{{ entry.user.id }}">{{ entry.user.username }}</a></td>
+        <td class="num">{{ glyph(kind.value, kind.value) }} {{ (entry.stats|attr(kind.value))|number }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">Nobody is ranked yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager("/leaderboards/" ~ kind, board.page + 1, board.size, board.total) }}
+{% endblock %}
