@@ -48,4 +48,4 @@ implicit_reexport = true
 plugins = ["pydantic.mypy"]
 
 [tool.uv.sources]
-poltergeist-core = { git = "https://github.com/RealistikGDPS/poltergeist-core" }
+poltergeist-core = { path = "../poltergeist-core", editable = true }

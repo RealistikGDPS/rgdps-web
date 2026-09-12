@@ -30,6 +30,8 @@
 
 * { box-sizing: border-box; }
 
+.sprite { display: none; }
+
 html { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.5; }
 
 body {
