@@ -1,5 +1,7 @@
+import hashlib
 from collections.abc import Callable
 from datetime import datetime
+from pathlib import Path
 
 import jinja2
 from gdformat import encoding
@@ -14,6 +16,21 @@ from web.icons import IconRenderer
 from web.icons import frames
 
 type IconUrl = Callable[[UserStats, IconKind | None], str]
+
+_STATIC_DIRECTORY = Path(__file__).resolve().parent.parent / "static"
+_VERSION_DIGITS = 12
+
+
+def _static_version() -> str:
+    """A digest of the stylesheet and script, so their URLs change with their
+    content and no cache in front of the site can serve a stale copy."""
+
+    digest = hashlib.sha256()
+
+    for name in ("css/site.css", "js/site.js"):
+        digest.update((_STATIC_DIRECTORY / name).read_bytes())
+
+    return digest.hexdigest()[:_VERSION_DIGITS]
 
 
 def _number(value: int) -> str:
@@ -82,6 +99,7 @@ _environment.globals.update(
     download_pc_url=settings.WEB_DOWNLOAD_PC_URL,
     download_android_url=settings.WEB_DOWNLOAD_ANDROID_URL,
     turnstile_site_key=settings.TURNSTILE_SITE_KEY,
+    static_version=_static_version(),
     leaderboard_kinds=list(LeaderboardKind),
     icon_kinds=list(IconKind),
 )

@@ -6,7 +6,7 @@
   <title>{% block title %}{{ site_name }}{% endblock %}</title>
   <meta name="description" content="{{ site_name }}: a Geometry Dash 2.2 private server. Downloads, leaderboards and player profiles.">
   <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/css/site.css">
+  <link rel="stylesheet" href="/static/css/site.css?v={{ static_version }}">
 </head>
 <body>
 <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -63,6 +63,6 @@
   <span>Not affiliated with RobTop Games.</span>
   <a href="https://github.com/RealistikGDPS">GitHub</a>
 </footer>
-<script src="/static/js/site.js" defer></script>
+<script src="/static/js/site.js?v={{ static_version }}" defer></script>
 </body>
 </html>
