@@ -653,7 +653,7 @@ wheels = [
 [[package]]
 name = "poltergeist-core"
 version = "0.1.0"
-source = { editable = "../poltergeist-core" }
+source = { git = "https://github.com/RealistikGDPS/poltergeist-core#abbb806952822190e35c89253e00825b546e048a" }
 dependencies = [
     { name = "asyncmy" },
     { name = "bcrypt" },
@@ -664,27 +664,6 @@ dependencies = [
     { name = "pyyaml" },
     { name = "redis" },
     { name = "uvloop" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "asyncmy", specifier = ">=0.2.14" },
-    { name = "bcrypt", specifier = ">=5.0.0" },
-    { name = "cryptography", specifier = ">=46.0.5" },
-    { name = "gdformat", specifier = ">=0.2.1" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pydantic", specifier = ">=2.13.5" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "redis", specifier = ">=8.1.0" },
-    { name = "uvloop", specifier = ">=0.22.1" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=1.19" },
-    { name = "pre-commit", specifier = ">=4" },
-    { name = "ruff", specifier = ">=0.14" },
-    { name = "types-pyyaml", specifier = ">=6.0.12" },
 ]
 
 [[package]]
@@ -864,7 +843,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pillow", specifier = ">=12.0.0" },
-    { name = "poltergeist-core", editable = "../poltergeist-core" },
+    { name = "poltergeist-core", git = "https://github.com/RealistikGDPS/poltergeist-core" },
     { name = "pydantic", specifier = ">=2.13.5" },
     { name = "python-json-logger", specifier = ">=4.2.0" },
     { name = "python-multipart", specifier = ">=0.0.32" },
