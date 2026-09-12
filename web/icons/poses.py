@@ -11,13 +11,17 @@ _IDLE_ANIMATIONS = {
     IconKind.SPIDER: "Spider_idle_001.png",
 }
 _PART_PATTERN = re.compile(r"^(?:robot|spider)_\d+_(\d+)_001\.png$")
+_BACK_PREFIX = "back"
 
 
 @dataclass(frozen=True, slots=True)
 class PartPose:
-    """Where one limb sits in the idle frame, in points at 1x scale."""
+    """Where one limb sits in the idle frame, in points at 1x scale. The
+    same limb sprite is placed several times (both legs share one texture);
+    `back` marks the copies the game draws darker behind the body."""
 
     part: int
+    back: bool
     x: float
     y: float
     rotation: float
@@ -40,13 +44,33 @@ def _pair(text: object, default: tuple[float, float]) -> tuple[float, float]:
     return float(parts[0]), float(parts[1])
 
 
-def _pose(part: int, entry: dict[str, Any]) -> PartPose:
+def _back_tags(data: dict[str, Any]) -> set[str]:
+    textures = data.get("usedTextures")
+
+    if not isinstance(textures, dict):
+        return set()
+
+    return {
+        str(entry["tag"])
+        for entry in textures.values()
+        if isinstance(entry, dict)
+        and str(entry.get("customID", "")).startswith(_BACK_PREFIX)
+    }
+
+
+def _pose(entry: dict[str, Any], back_tags: set[str]) -> PartPose | None:
+    match = _PART_PATTERN.match(str(entry.get("texture", "")))
+
+    if match is None:
+        return None
+
     x, y = _pair(entry.get("position"), (0.0, 0.0))
     scale_x, scale_y = _pair(entry.get("scale"), (1.0, 1.0))
     flipped_x, flipped_y = _pair(entry.get("flipped"), (0.0, 0.0))
 
     return PartPose(
-        part=part,
+        part=int(match.group(1)),
+        back=str(entry.get("tag", "")) in back_tags,
         x=x,
         y=y,
         rotation=float(entry.get("rotation", 0.0)),
@@ -67,9 +91,9 @@ def load_poses(plist: Path, kind: IconKind) -> list[PartPose] | None:
     if animation_name is None or not plist.is_file():
         return None
 
-    with plist.open("rb") as handle:
-        data = plistlib.load(handle)
-
+    # The game ships these with a blank line before the XML header, which
+    # plistlib's format sniffing does not tolerate.
+    data = plistlib.loads(plist.read_bytes().lstrip())
     container = data.get("animationContainer")
 
     if not isinstance(container, dict):
@@ -80,15 +104,17 @@ def load_poses(plist: Path, kind: IconKind) -> list[PartPose] | None:
     if not isinstance(frame, dict):
         return None
 
+    back_tags = _back_tags(data)
     poses = []
 
-    for name, entry in frame.items():
-        match = _PART_PATTERN.match(str(name))
-
-        if match is None or not isinstance(entry, dict):
+    for entry in frame.values():
+        if not isinstance(entry, dict):
             continue
 
-        poses.append(_pose(int(match.group(1)), entry))
+        pose = _pose(entry, back_tags)
+
+        if pose is not None:
+            poses.append(pose)
 
     if not poses:
         return None

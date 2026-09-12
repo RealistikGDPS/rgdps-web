@@ -28,6 +28,7 @@ _ICON_ID_MAX = 999
 # Animation positions are in points at 1x; the texture qualities scale them.
 _POINT_SCALE = {"uhd": 4, "hd": 2, "sd": 1}
 _ANIMATED_CANVAS = 4.0
+_BACK_SHADE = 0.6
 
 
 class IconError(ServiceError, StrEnum):
@@ -147,9 +148,18 @@ def _compose(
     return canvas
 
 
+def _shaded(part: Image.Image) -> Image.Image:
+    level = int(255 * _BACK_SHADE)
+
+    return _tinted(part, (level, level, level))
+
+
 def _place_part(
     canvas: Image.Image, part: Image.Image, pose: PartPose, scale: int
 ) -> None:
+    if pose.back:
+        part = _shaded(part)
+
     if pose.flipped_x:
         part = part.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
