@@ -55,6 +55,14 @@ make lint
 make dev        # uvicorn with reload on :8000
 ```
 
+## Events
+
+Major actions (registrations, level uploads and ratings, bans, roles,
+settings changes) are announced on Redis Pub/Sub channels named
+`poltergeist:*`, each message carrying `"component": "rgdps-web"`. The
+envelope and the event catalogue are documented in
+[poltergeist-core](https://github.com/RealistikGDPS/poltergeist-core#events).
+
 ### Icon assets
 
 `WEB_ASSETS_PATH` must contain the game's `icons/` directory (the per-icon
