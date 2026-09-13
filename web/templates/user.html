@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import glyph, icon %}
+{% from "_macros.html" import glyph, icon, manage with context %}
 {% set profile = payload.profile %}
 {% set player = profile.user %}
 {% set stats = profile.stats %}
@@ -8,7 +8,7 @@
 <section class="profile-head card">
   {{ icon(stats, 128, alt=player.username ~ "'s icon") }}
   <div>
-    <h1>{{ player.username }}</h1>
+    <h1>{{ player.username }}{{ manage("/admin/users/" ~ player.id) }}</h1>
     <p class="chips">
       {% if profile.mod_level|mod_level %}<span class="chip mod">{{ profile.mod_level|mod_level }}</span>{% endif %}
       {% for role in profile.roles if role.name != "default" %}<span class="chip">{{ role.name|replace("_", " ") }}</span>{% endfor %}

@@ -4,6 +4,8 @@
 
 {% macro error_box(text) %}<p class="error" role="alert">{{ text }}</p>{% endmacro %}
 
+{% macro manage(href, label="Manage") %}{% if viewer and viewer.is_operator %}<a class="manage" href="{{ href }}" title="Open in the admin area">{{ label }}</a>{% endif %}{% endmacro %}
+
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% endmacro %}
 
 {% macro pager(page, size, total) %}
@@ -20,7 +22,7 @@
 {% macro level_card(level, creator) %}
 <article class="card level {{ level.difficulty|difficulty_class }}">
   <div class="level-head">
-    <h3>{{ level.name }}</h3>
+    <h3>{{ level.name }}{{ manage("/admin/levels/" ~ level.id) }}</h3>
     {% if level.rating|rating %}<span class="tag rating-{{ level.rating|rating|lower }}">{{ level.rating|rating }}</span>{% elif level.is_featured %}<span class="tag featured">Featured</span>{% endif %}
   </div>
   <p class="muted">by {% if creator %}<a href="/users/{{ creator.id }}">{{ creator.username }}</a>{% else %}an unknown player{% endif %}</p>

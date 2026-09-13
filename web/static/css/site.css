@@ -87,6 +87,12 @@ h1 .accent { color: var(--brand); }
 .menu a.active, .session a.active { color: var(--text); background: var(--raised); border-color: var(--line); }
 .menu a.admin-link { color: var(--brand); border-color: var(--line); border-style: dashed; }
 .menu a.admin-link.active { border-style: solid; border-color: var(--brand); }
+/* Operator-only shortcut into the admin area, shown next to the thing it manages. */
+.manage { display: inline-block; vertical-align: middle; margin-left: 0.6rem; padding: 0.1rem 0.5rem; font-family: var(--body); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-shadow: none; color: var(--brand); border: 1px dashed var(--brand); border-radius: 4px; background: var(--surface); }
+.manage:hover { text-decoration: none; border-style: solid; background: var(--brand); color: var(--brand-ink); }
+h1 .manage { font-size: 0.7rem; }
+.level-head h3 .manage { margin-left: 0.4rem; }
+.board .manage { margin-left: 0.5rem; }
 .session { margin-left: auto; display: flex; align-items: center; gap: 0.25rem; }
 .session .who { color: var(--brand); }
 .session form { margin: 0; }

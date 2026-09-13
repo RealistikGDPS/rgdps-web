@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_macros.html" import manage with context %}
 {% block title %}Downloads · {{ site_name }}{% endblock %}
 {% block content %}
 <section class="hero narrow">
   <p class="eyebrow">Get playing</p>
-  <h1>Downloads</h1>
+  <h1>Downloads{{ manage("/admin/settings", "Edit links") }}</h1>
   <p class="lead">A copy of Geometry Dash 2.2 pointed at {{ site_name }}. Your official account and levels stay untouched; this is a separate game with its own accounts.</p>
 </section>
 <section class="two-up">

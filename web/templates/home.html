@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import glyph, level_card %}
+{% from "_macros.html" import glyph, level_card with context %}
 {% block content %}
 {% set totals = payload.snapshot.totals %}
 <section class="hero">

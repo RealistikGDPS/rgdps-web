@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import glyph, icon, pager with context %}
+{% from "_macros.html" import glyph, icon, manage, pager with context %}
 {% block title %}{{ kind|leaderboard_kind }} leaderboard · {{ site_name }}{% endblock %}
 {% block content %}
 <section class="section-head">
@@ -18,7 +18,7 @@
       <tr>
         <td class="rank">{{ entry.rank }}</td>
         <td class="icon-cell">{{ icon(entry.stats, 48) }}</td>
-        <td><a class="name" href="/users/{{ entry.user.id }}">{{ entry.user.username }}</a></td>
+        <td><a class="name" href="/users/{{ entry.user.id }}">{{ entry.user.username }}</a>{{ manage("/admin/users/" ~ entry.user.id) }}</td>
         <td class="num">{{ glyph(kind.value, kind.value) }} {{ (entry.stats|attr(kind.value))|number }}</td>
       </tr>
     {% else %}

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_macros.html" import manage with context %}
 {% block title %}Tools · {{ site_name }}{% endblock %}
 {% block content %}
 <section class="hero narrow">
   <p class="eyebrow">Toolbox</p>
-  <h1>Tools</h1>
+  <h1>Tools{{ manage("/admin/settings", "Switches") }}</h1>
   <p class="lead">Utilities for creators. More are on the way.</p>
 </section>
 <section class="two-up">
