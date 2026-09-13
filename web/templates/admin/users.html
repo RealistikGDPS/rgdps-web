@@ -1,0 +1,60 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager, when with context %}
+{% from "admin/_widgets.html" import toolbar, field, check, select_all, bulk_bar, drawer, chip_ban, chip_role, empty %}
+{% block admin_title %}Users{% endblock %}
+{% block admin_eyebrow %}People · {{ listing.total|number }} accounts{% endblock %}
+{% block admin_heading %}Users{% endblock %}
+{% block admin %}
+{% call toolbar() %}
+  {% call field("Search", grow=True) %}<input name="q" value="{{ listing.query }}" placeholder="Name, email or id" data-search>{% endcall %}
+  {% call field("Order") %}<select name="order" data-autosubmit>{% for option in orders %}<option value="{{ option }}" {% if option == listing.order %}selected{% endif %}>{{ option.replace("_", " ")|capitalize }}</option>{% endfor %}</select>{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr>{{ select_all() }}<th class="mono">Id</th><th class="sticky">Username</th><th>Kind</th><th>Email</th><th class="num">Stars</th><th class="num">Demons</th><th class="num">CP</th><th>Roles</th><th>Bans</th><th>Registered</th><th>Last seen</th></tr></thead>
+      <tbody>
+      {% for row in listing.rows %}
+      <tr>
+        {{ check(row.user.id) }}
+        <td class="mono">{{ row.user.id }}</td>
+        <td class="sticky"><a class="name" href="/admin/users/{{ row.user.id }}">{{ row.user.username }}</a></td>
+        <td>{% if row.user.kind != "player" %}<span class="chip kind">{{ row.user.kind|user_kind }}</span>{% else %}<span class="muted">Player</span>{% endif %}</td>
+        <td class="muted">{{ row.user.email }}</td>
+        <td class="num">{{ row.stats.stars|number if row.stats else "–" }}</td>
+        <td class="num">{{ row.stats.demons|number if row.stats else "–" }}</td>
+        <td class="num">{{ row.stats.creator_points|number if row.stats else "–" }}</td>
+        <td><span class="chips">{% for role in row.roles if role.name != "default" %}{{ chip_role(role) }}{% endfor %}</span></td>
+        <td><span class="chips">{% for ban in row.bans %}{{ chip_ban(ban) }}{% endfor %}</span></td>
+        <td class="muted">{{ when(row.user.registered_at) }}</td>
+        <td class="muted">{{ when(row.user.last_seen_at) }}</td>
+      </tr>
+      {% else %}
+      {{ empty("Nobody matches.", 12) }}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% call bulk_bar() %}
+    {% call drawer("Ban") %}
+      <label class="field"><span>Type</span><select name="ban_type">{% for option in ban_types %}<option value="{{ option }}">{{ option|ban_type }}</option>{% endfor %}</select></label>
+      <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="7"></label>
+      <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+      <label class="field grow"><span>Reason</span><input name="reason" maxlength="255" placeholder="Shown to the player"></label>
+      <button class="button small danger" formaction="/admin/users/ban{{ back_query(request) }}">Ban selected</button>
+    {% endcall %}
+    {% call drawer("Lift ban") %}
+      <label class="field"><span>Type</span><select name="unban_type">{% for option in ban_types %}<option value="{{ option }}">{{ option|ban_type }}</option>{% endfor %}</select></label>
+      <button class="button small" formaction="/admin/users/unban{{ back_query(request) }}">Lift selected</button>
+    {% endcall %}
+    {% call drawer("Roles") %}
+      <label class="field"><span>Role</span><select name="role">{% for role in listing.all_roles %}<option value="{{ role.name }}">{{ role.name }} ({{ role.priority }})</option>{% endfor %}</select></label>
+      <button class="button small" formaction="/admin/users/roles/assign{{ back_query(request) }}">Assign</button>
+      <button class="button small ghost" formaction="/admin/users/roles/revoke{{ back_query(request) }}">Revoke</button>
+    {% endcall %}
+    <button class="button small ghost" formaction="/admin/users/revoke-sessions{{ back_query(request) }}" data-confirm="Sign the selected players out of the game and the website?">Revoke sessions</button>
+  {% endcall %}
+</form>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% endblock %}

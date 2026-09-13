@@ -1,0 +1,62 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager with context %}
+{% from "admin/_widgets.html" import toolbar, field, check, select_all, bulk_bar, empty %}
+{% block admin_title %}Songs{% endblock %}
+{% block admin_eyebrow %}Content · {{ listing.total|number }} songs{% endblock %}
+{% block admin_heading %}Songs{% endblock %}
+{% block admin %}
+{% call toolbar() %}
+  {% call field("Search", grow=True) %}<input name="q" value="{{ listing.query }}" placeholder="Name, artist or id" data-search>{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr>{{ select_all() }}<th class="mono">Id</th><th class="sticky">Name</th><th>Artist</th><th>Source</th><th class="num">Size</th><th>State</th><th class="wide">URL</th></tr></thead>
+      <tbody>
+      {% for song in listing.songs %}
+      <tr>
+        {{ check(song.id) }}
+        <td class="mono">{{ song.id }}</td>
+        <td class="sticky"><a class="name" href="/admin/songs/{{ song.id }}">{{ song.name }}</a></td>
+        <td>{{ song.artist_name }}</td>
+        <td class="muted">{{ song.source|song_source }}</td>
+        <td class="num">{{ song.size_bytes|megabytes }}</td>
+        <td>{% if song.disabled_at %}<span class="tag off">Disabled</span>{% else %}<span class="tag on">Live</span>{% endif %}</td>
+        <td class="wide content mono small" title="{{ song.url }}">{{ song.url }}</td>
+      </tr>
+      {% else %}
+      {{ empty("No songs match.", 8) }}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% call bulk_bar() %}
+    <button class="button small danger" formaction="/admin/songs/disable{{ back_query(request) }}">Disable selected</button>
+    <button class="button small" formaction="/admin/songs/enable{{ back_query(request) }}">Enable selected</button>
+  {% endcall %}
+</form>
+{{ pager(listing.page, listing.size, listing.total) }}
+<section class="split">
+  <div class="card">
+    <h3>Add a custom song</h3>
+    <form method="post" action="/admin/songs/custom">
+      {{ csrf() }}
+      <label>Name<input name="name" maxlength="128" required></label>
+      <label>Artist<input name="artist" maxlength="64" required></label>
+      <label>Direct audio URL<input name="url" type="url" maxlength="512" required></label>
+      <label>Size in MB<input name="size_mb" type="number" min="0.1" step="0.1" value="3.0" required></label>
+      <button class="button small" type="submit">Create</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Fetch from the official servers</h3>
+    <p class="muted small">Looks a Newgrounds song up upstream and keeps it. The official servers rate limit us, so use it sparingly.</p>
+    <form method="post" action="/admin/songs/fetch">
+      {{ csrf() }}
+      <label>Song id<input name="song_id" type="number" min="1" required></label>
+      <button class="button small ghost" type="submit">Fetch</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

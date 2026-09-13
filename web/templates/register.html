@@ -2,6 +2,14 @@
 {% from "_macros.html" import csrf, error_box with context %}
 {% block title %}Register · {{ site_name }}{% endblock %}
 {% block content %}
+{% if not site.registration_enabled %}
+<section class="form-card card">
+  <p class="eyebrow">Join the server</p>
+  <h1>Registration is closed</h1>
+  <p class="muted">New accounts are not being accepted right now. If you already have one, you can still log in.</p>
+  <p class="actions"><a class="button" href="/login">Log in</a><a class="button ghost" href="/downloads">Downloads</a></p>
+</section>
+{% else %}
 <section class="form-card card">
   <p class="eyebrow">Join the server</p>
   <h1>Register</h1>
@@ -21,4 +29,5 @@
   </form>
   <p class="muted">Already registered? <a href="/login">Log in</a>.</p>
 </section>
+{% endif %}
 {% endblock %}

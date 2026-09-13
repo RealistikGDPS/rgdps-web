@@ -1,0 +1,39 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% set role = detail.role %}
+{% block admin_title %}{{ role.name }}{% endblock %}
+{% block admin_eyebrow %}Server · role #{{ role.id }} · priority {{ role.priority }}{% endblock %}
+{% block admin_heading %}{{ role.name }}{% endblock %}
+{% block admin_actions %}<a class="button small ghost" href="/admin/roles">All roles</a>{% endblock %}
+{% block admin %}
+<section class="split wide-left align-start">
+  <form method="post" action="/admin/roles/{{ role.id }}" class="card">
+    {{ csrf() }}
+    <h3>Edit</h3>
+    <div class="split">
+      <label>Name<input name="name" value="{{ role.name }}" maxlength="32" pattern="[a-z0-9_]{2,32}" required class="mono"></label>
+      <label>Priority<input type="number" name="priority" value="{{ role.priority }}" required></label>
+    </div>
+    <label>Description<input name="description" value="{{ role.description }}" maxlength="255"></label>
+    <label><span>Permissions, one per line (<code>levels.*</code> and <code>*</code> are wildcards, <code>-</code> denies)</span><textarea name="permissions" rows="16" class="mono">{{ detail.permissions|join("\n") }}</textarea></label>
+    <button class="button small" type="submit">Save role</button>
+  </form>
+  <div class="stack">
+    <div class="card">
+      <h3>{{ detail.member_count|number }} member{{ "s" if detail.member_count != 1 }}</h3>
+      <div class="chips">
+        {% for member in detail.members %}<a class="chip plain" href="/admin/users/{{ member.id }}">{{ member.username }}</a>{% else %}<span class="muted">Nobody holds this role.</span>{% endfor %}
+        {% if detail.member_count > detail.members|length %}<span class="chip plain">…</span>{% endif %}
+      </div>
+    </div>
+    {% if role.name != "default" %}
+    <form method="post" action="/admin/roles/{{ role.id }}/remove" class="card">
+      {{ csrf() }}
+      <h3>Danger</h3>
+      <p class="muted small">Every member loses the role at once.</p>
+      <button class="button small danger" type="submit" data-confirm="Remove the role {{ role.name }} from everyone?">Remove role</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

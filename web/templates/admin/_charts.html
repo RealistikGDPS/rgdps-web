@@ -1,0 +1,54 @@
+{% macro sparkline(values, tone="") %}<svg class="spark {{ tone }}" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true"><polyline pathLength="1" points="{{ values|spark_points }}"/></svg>{% endmacro %}
+
+{% macro area(chart) %}
+{% set count = chart.points|length %}
+{% set step = (320 / (count - 1)) if count > 1 else 320 %}
+<article class="card chart-area">
+  <div class="chart-head"><h3>{{ chart.title }}</h3><span class="value" data-count-up data-value="{{ chart.total }}">{{ chart.total|number }}</span></div>
+  <svg viewBox="0 0 320 120" preserveAspectRatio="none" role="img" aria-label="{{ chart.title }} per day">
+    <line class="grid-line" x1="0" y1="1" x2="320" y2="1"/>
+    <line class="grid-line" x1="0" y1="60" x2="320" y2="60"/>
+    <line class="grid-line" x1="0" y1="119" x2="320" y2="119"/>
+    <path class="fill" d="{{ chart.values|area_path }}"/>
+    <path class="line" pathLength="1" d="{{ chart.values|line_path }}"/>
+    {% for point in chart.points %}
+    <rect class="hit" x="{{ loop.index0 * step - step / 2 }}" y="0" width="{{ step }}" height="120"><title>{{ point.day }}: {{ point.count|number }}</title></rect>
+    {% endfor %}
+  </svg>
+  <div class="chart-foot"><span>{{ chart.points[0].day if chart.points else "" }}</span><span class="muted">peak {{ chart.peak|number }}</span><span>today</span></div>
+</article>
+{% endmacro %}
+
+{% macro bars(rows) %}
+{% set peak = rows|map(attribute="count")|max if rows else 0 %}
+<ul class="bars">
+  {% for row in rows %}
+  <li>
+    <span class="bar-label">{{ row.label }}</span>
+    <span class="bar-track"><span class="bar-fill {{ row.css }}" style="width: {{ (row.count / peak * 100) if peak else 0 }}%"></span></span>
+    <span class="bar-value">{{ row.count|number }}</span>
+  </li>
+  {% else %}
+  <li class="muted">Nothing yet.</li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro heat(hours) %}
+{% set peak = hours|max if hours else 0 %}
+<div class="heat" role="img" aria-label="Comments by hour of day">
+  {% for count in hours %}<span style="--v: {{ (count / peak) if peak else 0 }}" title="{{ '%02d'|format(loop.index0) }}:00 UTC · {{ count|number }}"></span>{% endfor %}
+</div>
+<div class="heat-axis muted small"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+{% endmacro %}
+
+{% macro kpi(entry) %}
+<article class="kpi card{% if entry.inverted %} inverted{% endif %}">
+  <span class="kpi-label">{{ entry.label }}</span>
+  <span class="kpi-value" data-count-up data-value="{{ entry.value }}">{{ entry.value|number }}</span>
+  {% if entry.delta is not none %}
+  <span class="delta {% if entry.delta > 0 %}up{% elif entry.delta < 0 %}down{% else %}flat{% endif %}">{% if entry.delta > 0 %}+{% endif %}{{ entry.delta|number }} vs previous</span>
+  {% endif %}
+  {% if entry.spark %}{{ sparkline(entry.spark) }}{% endif %}
+</article>
+{% endmacro %}

@@ -1,12 +1,14 @@
 from typing import Annotated
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Form
 from fastapi import Request
 from fastapi import Response
 from poltergeist_core.resources import User
 from poltergeist_core.services import auth
 
+from web.api import dependencies
 from web.api import response
 from web.api.dependencies import RequiresContext
 from web.api.dependencies import RequiresCsrf
@@ -14,7 +16,7 @@ from web.api.dependencies import RequiresTransaction
 from web.api.dependencies import RequiresUser
 from web.services import accounts
 
-router = APIRouter(prefix="/account")
+router = APIRouter(prefix="/account", dependencies=[Depends(dependencies.site)])
 
 
 @router.get("")

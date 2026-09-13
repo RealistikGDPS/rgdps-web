@@ -1,0 +1,52 @@
+{% macro toolbar() %}
+<form class="toolbar card" method="get">
+  {{ caller() }}
+  <button class="button small ghost" type="submit">Filter</button>
+</form>
+{% endmacro %}
+
+{% macro field(label, grow=False) %}<label class="field{% if grow %} grow{% endif %}"><span>{{ label }}</span>{{ caller() }}</label>{% endmacro %}
+
+{% macro facts(rows) %}
+<dl class="facts">
+  {% for key, value in rows %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}
+</dl>
+{% endmacro %}
+
+{% macro check(id) %}<td class="check"><input type="checkbox" name="ids" value="{{ id }}" aria-label="Select {{ id }}"></td>{% endmacro %}
+
+{% macro select_all() %}<th class="check"><input type="checkbox" data-select-all aria-label="Select every row"></th>{% endmacro %}
+
+{% macro bulk_bar() %}
+<div class="bulk-bar">
+  <span class="count"><strong data-bulk-count>0</strong> selected</span>
+  <div class="bulk-actions">{{ caller() }}</div>
+</div>
+{% endmacro %}
+
+{% macro drawer(title) %}
+<details class="drawer">
+  <summary class="button ghost small">{{ title }}</summary>
+  <div class="drawer-body">{{ caller() }}</div>
+</details>
+{% endmacro %}
+
+{% macro chip_ban(ban) %}<span class="chip ban-{{ ban.type }}" title="{{ ban.reason or 'no reason given' }} · {% if ban.expires_at %}until {{ ban.expires_at|stamp }}{% else %}permanent{% endif %}">{{ ban.type|ban_type }} ban</span>{% endmacro %}
+
+{% macro chip_role(role) %}<span class="chip role" title="priority {{ role.priority }}">{{ role.name }}</span>{% endmacro %}
+
+{% macro empty(text, span) %}<tr><td colspan="{{ span }}" class="empty">{{ text }}</td></tr>{% endmacro %}
+
+{% macro user_link(user, user_id) %}{% if user %}<a href="/admin/users/{{ user.id }}">{{ user.username }}</a>{% else %}<span class="muted">#{{ user_id }}</span>{% endif %}{% endmacro %}
+
+{% macro level_link(level, level_id) %}{% if level %}<a href="/admin/levels/{{ level.id }}">{{ level.name }}</a>{% else %}<span class="muted">#{{ level_id }}</span>{% endif %}{% endmacro %}
+
+{% macro status_tile(tile) %}
+<article class="status-tile card {{ tile.state }}" data-key="{{ tile.key }}">
+  <header><span class="dot {{ tile.state }}" data-dot></span><h3>{{ tile.label }}</h3></header>
+  <p class="ms"><span data-ms>{% if tile.latency_ms is none %}–{% else %}{{ tile.latency_ms|round|int }}{% endif %}</span><small>ms</small></p>
+  <dl class="facts compact" data-facts>
+    {% for key, value in tile.facts %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}
+  </dl>
+</article>
+{% endmacro %}

@@ -1,0 +1,40 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% from "admin/_widgets.html" import facts, status_tile %}
+{% block admin_title %}Status{% endblock %}
+{% block admin_eyebrow %}Overview · live every {{ status_poll_seconds }}s{% endblock %}
+{% block admin_heading %}Stack status{% endblock %}
+{% block admin_actions %}<span class="muted small">Checked <span data-checked-at>{{ stack.checked_at|stamp }}</span> UTC <span class="dot up pulse" data-live-dot></span></span>{% endblock %}
+{% block admin %}
+<section class="status-grid" data-poll-url="/admin/status/probe.json" data-poll-seconds="{{ status_poll_seconds }}">
+  {% for tile in stack.tiles %}{{ status_tile(tile) }}{% endfor %}
+  <article class="status-tile card unknown" data-key="boomlings">
+    <header><span class="dot unknown"></span><h3>Boomlings</h3></header>
+    <p class="muted small">The official servers rate limit us, so this is checked on demand.</p>
+    <form method="post" action="/admin/status/boomlings">{{ csrf() }}<button class="button small ghost" type="submit">Check now</button></form>
+  </article>
+</section>
+<section class="split">
+  <div class="card">
+    <h3>Configuration</h3>
+    {{ facts(configuration) }}
+  </div>
+  <div class="stack">
+    {% if viewer.may(permission.ADMIN_MAINTENANCE) %}
+    <form method="post" action="/admin/status/rebuild-leaderboards" class="card">
+      {{ csrf() }}
+      <h3>Leaderboards</h3>
+      <p class="muted small">Rebuilds every ranking from MySQL. Safe while players are online.</p>
+      <button class="button small" type="submit" data-confirm="Rebuild every leaderboard from MySQL now?">Rebuild leaderboards</button>
+    </form>
+    {% endif %}
+    <form method="post" action="/admin/status/revoke-sessions" class="card">
+      {{ csrf() }}
+      <h3>Force a re-login</h3>
+      <p class="muted small">Drops the player's game session, website sessions and permission cache.</p>
+      <label>User id<input type="number" name="user_id" min="1" required></label>
+      <button class="button small ghost" type="submit">Revoke sessions</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

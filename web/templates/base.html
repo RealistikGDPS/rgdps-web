@@ -7,6 +7,7 @@
   <meta name="description" content="{{ site_name }}: a Geometry Dash 2.2 private server. Downloads, leaderboards and player profiles.">
   <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/css/site.css?v={{ static_version }}">
+{% block head %}{% endblock %}
 </head>
 <body>
 <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -30,6 +31,7 @@
     <a href="/leaderboards/stars" {% if request.url.path.startswith("/leaderboards") %}class="active"{% endif %}>Leaderboards</a>
     <a href="/downloads" {% if request.url.path == "/downloads" %}class="active"{% endif %}>Downloads</a>
     <a href="/tools" {% if request.url.path.startswith("/tools") %}class="active"{% endif %}>Tools</a>
+    {% if viewer and viewer.is_operator %}<a class="admin-link{% if request.url.path.startswith("/admin") %} active{% endif %}" href="/admin">Admin</a>{% endif %}
   </nav>
   <div class="session">
     {% if viewer %}
@@ -41,13 +43,14 @@
       </form>
     {% else %}
       <a href="/login">Log in</a>
-      <a class="button small" href="/register">Register</a>
+      {% if site.registration_enabled %}<a class="button small" href="/register">Register</a>{% endif %}
     {% endif %}
   </div>
 </header>
 {% if flash %}
 <div class="flash" role="status">
-  {% if flash == "logged_in" %}Welcome back.
+  {% if flash == "admin" %}{{ flash_detail }}
+  {% elif flash == "logged_in" %}Welcome back.
   {% elif flash == "logged_out" %}You are logged out.
   {% elif flash == "registered" %}Your account is ready. Log into the game with the same details.
   {% elif flash == "password_changed" %}Password changed. Every other device was signed out.
@@ -55,7 +58,7 @@
   {% endif %}
 </div>
 {% endif %}
-<main class="page">
+<main class="page{% block page_class %}{% endblock %}">
 {% block content %}{% endblock %}
 </main>
 <footer class="footer">
@@ -64,5 +67,6 @@
   <a href="https://github.com/RealistikGDPS">GitHub</a>
 </footer>
 <script src="/static/js/site.js?v={{ static_version }}" defer></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,41 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block admin_title %}Settings{% endblock %}
+{% block admin_eyebrow %}Server · live switches{% endblock %}
+{% block admin_heading %}Settings{% endblock %}
+{% block admin %}
+{% set editable = viewer.may(permission.ADMIN_SETTINGS) %}
+<form method="post" action="/admin/settings" class="stack">
+  {{ csrf() }}
+  {% if not editable %}<p class="alert">Read only: your roles lack <code>admin.settings</code>.</p>{% endif %}
+  <fieldset class="card switches" {% if not editable %}disabled{% endif %}>
+    <h3>Doors</h3>
+    <label class="switch-row">
+      <span><strong>Registration</strong><small>New accounts in the game and on the website.</small></span>
+      <span class="switch"><input type="checkbox" name="registration_enabled" value="true" {% if site.registration_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
+    </label>
+    <label class="switch-row">
+      <span><strong>Level uploads</strong><small>Uploading and updating levels from the game.</small></span>
+      <span class="switch"><input type="checkbox" name="level_uploads_enabled" value="true" {% if site.level_uploads_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
+    </label>
+  </fieldset>
+  <fieldset class="card switches" {% if not editable %}disabled{% endif %}>
+    <h3>Tools</h3>
+    <label class="switch-row">
+      <span><strong>Song reupload</strong><small>The website tool that brings a song onto the server.</small></span>
+      <span class="switch"><input type="checkbox" name="song_reupload_enabled" value="true" {% if site.song_reupload_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
+    </label>
+    <label class="switch-row">
+      <span><strong>Level reupload</strong><small>The website tool that copies a level from the official servers.</small></span>
+      <span class="switch"><input type="checkbox" name="level_reupload_enabled" value="true" {% if site.level_reupload_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
+    </label>
+  </fieldset>
+  <fieldset class="card" {% if not editable %}disabled{% endif %}>
+    <h3>Downloads</h3>
+    <p class="muted small">HTTPS links or a path on this site such as <code>/files/RealistikGDPS.zip</code>. Empty hides the button.</p>
+    <label>PC download<input name="download_pc_url" value="{{ site.download_pc_url }}" maxlength="512" placeholder="https://…"></label>
+    <label>Android download<input name="download_android_url" value="{{ site.download_android_url }}" maxlength="512" placeholder="https://…"></label>
+  </fieldset>
+  {% if editable %}<div><button class="button" type="submit">Save settings</button></div>{% endif %}
+</form>
+{% endblock %}

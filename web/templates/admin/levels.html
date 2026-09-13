@@ -1,0 +1,69 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, glyph, pager, when with context %}
+{% from "admin/_widgets.html" import toolbar, field, check, select_all, bulk_bar, drawer, empty %}
+{% set filters = listing.filters %}
+{% block admin_title %}Levels{% endblock %}
+{% block admin_eyebrow %}Content · {{ listing.total|number }} levels{% endblock %}
+{% block admin_heading %}Levels{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Levels"><a class="active" href="/admin/levels">Browse</a><a href="/admin/levels/queues">Queues</a></nav>
+{% endblock %}
+{% block admin %}
+{% call toolbar() %}
+  {% call field("Search", grow=True) %}<input name="q" value="{{ filters.query }}" placeholder="Name prefix or level id" data-search>{% endcall %}
+  {% call field("Order") %}<select name="order" data-autosubmit>{% for option in orders %}<option value="{{ option }}" {% if option == filters.order %}selected{% endif %}>{{ option|capitalize }}</option>{% endfor %}</select>{% endcall %}
+  {% call field("Rating") %}<select name="rated" data-autosubmit>{% for option in rated_options %}<option value="{{ option }}" {% if option == filters.rated %}selected{% endif %}>{{ option|capitalize }}</option>{% endfor %}</select>{% endcall %}
+  {% call field("Creator id") %}<input name="creator" value="{{ filters.creator }}" inputmode="numeric" size="8">{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr>{{ select_all() }}<th class="mono">Id</th><th class="sticky">Name</th><th>Creator</th><th class="num">Stars</th><th>Difficulty</th><th>Rating</th><th class="num">Downloads</th><th class="num">Likes</th><th>Length</th><th>Visibility</th><th>Locked</th><th>Uploaded</th></tr></thead>
+      <tbody>
+      {% for level in listing.levels %}
+      {% set creator = listing.creators.get(level.user_id) %}
+      <tr class="level-row {{ level.difficulty|difficulty_class }}">
+        {{ check(level.id) }}
+        <td class="mono">{{ level.id }}</td>
+        <td class="sticky"><a class="name" href="/admin/levels/{{ level.id }}">{{ level.name }}</a></td>
+        <td>{% if creator %}<a href="/admin/users/{{ creator.id }}">{{ creator.username }}</a>{% else %}<span class="muted">#{{ level.user_id }}</span>{% endif %}</td>
+        <td class="num">{% if level.stars %}{{ glyph("stars", "stars") }}{{ level.stars }}{% else %}<span class="muted">–</span>{% endif %}</td>
+        <td><span class="badge diff">{{ level.difficulty|difficulty }}</span></td>
+        <td>{% if level.rating|rating %}<span class="tag rating-{{ level.rating|rating|lower }}">{{ level.rating|rating }}</span>{% elif level.is_featured %}<span class="tag featured">Featured</span>{% endif %}</td>
+        <td class="num">{{ level.downloads|number }}</td>
+        <td class="num">{{ level.likes|number }}</td>
+        <td class="muted">{{ level.length|level_length }}</td>
+        <td>{% if level.visibility != 0 %}<span class="tag off">{{ level.visibility|visibility }}</span>{% else %}<span class="muted">Public</span>{% endif %}</td>
+        <td>{% if level.update_locked %}<span class="tag">Locked</span>{% endif %}</td>
+        <td class="muted">{{ when(level.uploaded_at) }}</td>
+      </tr>
+      {% else %}
+      {{ empty("No levels match.", 13) }}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% call bulk_bar() %}
+    {% call drawer("Rate") %}
+      <label class="field"><span>Stars <output data-range-output>5</output></span><input type="range" name="stars" min="0" max="10" value="5" data-range></label>
+      <label class="field"><span>Feature tier</span><select name="feature"><option value="">Keep</option>{% for option in send_features %}<option value="{{ option.value }}">{{ option|send_feature }}</option>{% endfor %}</select></label>
+      <label class="field"><span>Demon tier</span><select name="demon"><option value="">Keep</option>{% for option in demon_difficulties %}<option value="{{ option.value }}">{{ option|demon_difficulty }}</option>{% endfor %}</select></label>
+      <button class="button small" formaction="/admin/levels/rate{{ back_query(request) }}">Rate selected</button>
+      <span class="muted small">0 stars removes the rating.</span>
+    {% endcall %}
+    {% call drawer("Visibility") %}
+      <label class="field"><span>Visibility</span><select name="visibility">{% for option in visibilities %}<option value="{{ option.value }}">{{ option|visibility }}</option>{% endfor %}</select></label>
+      <button class="button small" formaction="/admin/levels/visibility{{ back_query(request) }}">Apply</button>
+      <button class="button small ghost" formaction="/admin/levels/lock{{ back_query(request) }}">Lock updates</button>
+      <button class="button small ghost" formaction="/admin/levels/unlock{{ back_query(request) }}">Unlock</button>
+    {% endcall %}
+    {% call drawer("Timely") %}
+      <label class="field"><span>Queue as</span><select name="timely_type">{% for option in timely_types %}<option value="{{ option.value }}">{{ option|timely_type }}</option>{% endfor %}</select></label>
+      <button class="button small" formaction="/admin/levels/timely{{ back_query(request) }}">Schedule selected</button>
+    {% endcall %}
+    <button class="button small danger" formaction="/admin/levels/delete{{ back_query(request) }}" data-confirm="Delete the selected levels? They vanish from every listing; their files stay in storage.">Delete</button>
+  {% endcall %}
+</form>
+{{ pager(filters.page, listing.size, listing.total) }}
+{% endblock %}

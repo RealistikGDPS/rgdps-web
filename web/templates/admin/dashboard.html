@@ -1,0 +1,60 @@
+{% extends "admin/_layout.html" %}
+{% from "admin/_charts.html" import kpi, area, bars, heat %}
+{% from "admin/_widgets.html" import user_link %}
+{% set dash = overview.dashboard %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block admin_eyebrow %}Overview · last {{ dash.days }} days{% endblock %}
+{% block admin_heading %}Dashboard{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Window">
+  {% for days in windows %}<a href="/admin?days={{ days }}" {% if days == dash.days %}class="active"{% endif %}>{{ days }}d</a>{% endfor %}
+</nav>
+{% endblock %}
+{% block admin %}
+<section class="kpis">
+  {% for entry in overview.kpis %}{{ kpi(entry) }}{% endfor %}
+</section>
+<section class="charts wide-charts">
+  {% for chart in overview.charts %}{{ area(chart) }}{% endfor %}
+  <article class="card chart-area">
+    <div class="chart-head"><h3>Comments by hour</h3><span class="muted small">UTC</span></div>
+    {{ heat(overview.hours) }}
+  </article>
+</section>
+<section class="split three">
+  <div class="card"><h3>Difficulty faces</h3>{{ bars(overview.difficulties) }}</div>
+  <div class="card"><h3>Star ratings</h3>{{ bars(overview.stars) }}</div>
+  <div class="card"><h3>Lengths</h3>{{ bars(overview.lengths) }}</div>
+</section>
+<section class="split">
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr><th>Creator</th><th class="num">Levels</th><th class="num">Rated</th><th class="num">CP</th></tr></thead>
+      <tbody>
+      {% for creator in dash.top_creators %}
+      <tr><td><a href="/admin/users/{{ creator.user_id }}">{{ creator.username }}</a></td><td class="num">{{ creator.levels|number }}</td><td class="num">{{ creator.rated|number }}</td><td class="num">{{ creator.creator_points|number }}</td></tr>
+      {% else %}
+      <tr><td colspan="4" class="empty">No creators yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card log-card">
+    <div class="section-head"><h3>Latest moderation events</h3><a class="small" href="/admin/moderation">Full log →</a></div>
+    <ol class="log">
+      {% for entry in dash.recent_actions %}
+      {% set action = entry.action %}
+      <li class="log-line">
+        <time datetime="{{ action.created_at.isoformat() }}">{{ action.created_at|stamp }}</time>
+        <span class="actor">{% if entry.actor_username %}{{ entry.actor_username }}{% else %}#{{ action.user_id }}{% endif %}</span>
+        <span class="action">{{ action.action }}</span>
+        <span class="target">{{ action.target_type|mod_target|lower }} #{{ action.target_id }}</span>
+      </li>
+      {% else %}
+      <li class="muted">Nothing has happened yet.</li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+<p class="muted small">Generated {{ dash.generated_at|stamp }} UTC.</p>
+{% endblock %}

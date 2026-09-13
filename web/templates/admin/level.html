@@ -1,0 +1,71 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, glyph, when with context %}
+{% from "admin/_widgets.html" import facts, drawer %}
+{% set level = detail.level %}
+{% block admin_title %}{{ level.name }}{% endblock %}
+{% block admin_eyebrow %}Content · level #{{ level.id }}{% endblock %}
+{% block admin_heading %}{{ level.name }}{% endblock %}
+{% block admin_actions %}
+<a class="button small ghost" href="/admin/moderation?target_type=level&target={{ level.id }}">History</a>
+{% endblock %}
+{% block admin %}
+<section class="card level {{ level.difficulty|difficulty_class }}">
+  <div class="chips">
+    <span class="badge diff">{{ level.difficulty|difficulty }}</span>
+    {% if level.stars %}<span class="chip plain">{{ glyph("stars", "stars") }} {{ level.stars }} stars</span>{% endif %}
+    {% if level.rating|rating %}<span class="tag rating-{{ level.rating|rating|lower }}">{{ level.rating|rating }}</span>{% elif level.is_featured %}<span class="tag featured">Featured</span>{% endif %}
+    {% if level.visibility != 0 %}<span class="tag off">{{ level.visibility|visibility }}</span>{% endif %}
+    {% if level.update_locked %}<span class="tag">Locked</span>{% endif %}
+  </div>
+  <p class="muted">by {% if detail.creator %}<a href="/admin/users/{{ detail.creator.id }}">{{ detail.creator.username }}</a>{% else %}#{{ level.user_id }}{% endif %} · uploaded {{ when(level.uploaded_at) }} · updated {{ when(level.updated_at) }}</p>
+  {% if level.description %}<p>{{ level.description }}</p>{% endif %}
+</section>
+<section class="stat-strip">
+  <div class="stat"><span class="value">{{ level.downloads|number }}</span><span class="label">{{ glyph("downloads") }} downloads</span></div>
+  <div class="stat"><span class="value">{{ level.likes|number }}</span><span class="label">{{ glyph("likes") }} likes</span></div>
+  <div class="stat"><span class="value">{{ level.object_count|number }}</span><span class="label">{{ glyph("levels") }} objects</span></div>
+  <div class="stat"><span class="value">{{ level.version }}</span><span class="label">version</span></div>
+</section>
+<section class="split">
+  <div class="card">
+    <h3>Facts</h3>
+    {{ facts([
+      ("Song", (detail.song.name ~ " by " ~ detail.song.artist_name ~ " (#" ~ detail.song.id ~ ")") if detail.song else ("official #" ~ level.official_song_id)),
+      ("Length", level.length|level_length),
+      ("Coins", level.coins ~ (" verified" if level.coins_verified else " unverified")),
+      ("Requested stars", level.requested_stars),
+      ("Editor time", (level.editor_seconds)|duration),
+      ("Two player", "yes" if level.two_player else "no"),
+      ("Copyable", "yes" if level.copyable else "no"),
+      ("Original", ("#" ~ level.original_id) if level.original_id else "yes"),
+      ("Client", level.game_version ~ " / " ~ level.binary_version),
+      ("Rated", (level.rated_at|stamp ~ " UTC") if level.rated_at else "never"),
+    ]) }}
+  </div>
+  <div class="card">
+    <h3>Actions</h3>
+    <form method="post" class="bulk-inline">
+      {{ csrf() }}
+      <input type="hidden" name="ids" value="{{ level.id }}">
+      <div class="bulk-actions">
+        {% call drawer("Rate") %}
+          <label class="field"><span>Stars <output data-range-output>{{ level.stars }}</output></span><input type="range" name="stars" min="0" max="10" value="{{ level.stars }}" data-range></label>
+          <label class="field"><span>Feature tier</span><select name="feature"><option value="">Keep</option>{% for option in send_features %}<option value="{{ option.value }}">{{ option|send_feature }}</option>{% endfor %}</select></label>
+          <label class="field"><span>Demon tier</span><select name="demon"><option value="">Keep</option>{% for option in demon_difficulties %}<option value="{{ option.value }}">{{ option|demon_difficulty }}</option>{% endfor %}</select></label>
+          <button class="button small" formaction="/admin/levels/rate?next=/admin/levels/{{ level.id }}">Rate</button>
+        {% endcall %}
+        {% call drawer("Visibility") %}
+          <label class="field"><span>Visibility</span><select name="visibility">{% for option in visibilities %}<option value="{{ option.value }}" {% if option == level.visibility %}selected{% endif %}>{{ option|visibility }}</option>{% endfor %}</select></label>
+          <button class="button small" formaction="/admin/levels/visibility?next=/admin/levels/{{ level.id }}">Apply</button>
+          {% if level.update_locked %}<button class="button small ghost" formaction="/admin/levels/unlock?next=/admin/levels/{{ level.id }}">Unlock updates</button>{% else %}<button class="button small ghost" formaction="/admin/levels/lock?next=/admin/levels/{{ level.id }}">Lock updates</button>{% endif %}
+        {% endcall %}
+        {% call drawer("Timely") %}
+          <label class="field"><span>Queue as</span><select name="timely_type">{% for option in timely_types %}<option value="{{ option.value }}">{{ option|timely_type }}</option>{% endfor %}</select></label>
+          <button class="button small" formaction="/admin/levels/timely?next=/admin/timely">Schedule</button>
+        {% endcall %}
+        <button class="button small danger" formaction="/admin/levels/delete?next=/admin/levels" data-confirm="Delete {{ level.name }}? It vanishes from every listing; its file stays in storage.">Delete</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

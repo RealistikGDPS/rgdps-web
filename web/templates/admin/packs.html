@@ -1,0 +1,79 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, empty %}
+{% block admin_title %}Packs{% endblock %}
+{% block admin_eyebrow %}Content · map packs and gauntlets{% endblock %}
+{% block admin_heading %}Packs{% endblock %}
+{% block admin %}
+<section class="split align-start">
+  <div class="stack">
+    <div class="section-head"><h2>Map packs</h2></div>
+    <form method="post" data-bulk class="stack">
+      {{ csrf() }}
+      <div class="card table-card">
+        <table class="board dense">
+          <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Name</th><th class="num">Stars</th><th class="num">Coins</th><th>Difficulty</th><th>Levels</th></tr></thead>
+          <tbody>
+          {% for row in packs.packs %}
+          <tr>
+            {{ check(row.pack.id) }}
+            <td class="mono">{{ row.pack.id }}</td>
+            <td><span class="swatch" style="--swatch: {{ row.pack.bar_colour|hex_colour }}"></span><strong style="color: {{ row.pack.text_colour|hex_colour }}">{{ row.pack.name }}</strong></td>
+            <td class="num">{{ row.pack.stars }}</td>
+            <td class="num">{{ row.pack.coins }}</td>
+            <td>{{ row.pack.difficulty|map_pack_difficulty }}</td>
+            <td class="mono small">{{ row.level_ids|join(", ") }}</td>
+          </tr>
+          {% else %}
+          {{ empty("No map packs.", 7) }}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% call bulk_bar() %}<button class="button small danger" formaction="/admin/packs/map-packs/remove" data-confirm="Remove the selected map packs?">Remove selected</button>{% endcall %}
+    </form>
+    <form method="post" action="/admin/packs/map-packs" class="card">
+      {{ csrf() }}
+      <h3>New map pack</h3>
+      <label>Name<input name="name" maxlength="64" required></label>
+      <div class="split three">
+        <label>Stars<input type="number" name="stars" min="0" max="10" value="3"></label>
+        <label>Coins<input type="number" name="coins" min="0" max="2" value="1"></label>
+        <label>Difficulty<select name="difficulty">{% for option in map_pack_difficulties %}<option value="{{ option.value }}">{{ option|map_pack_difficulty }}</option>{% endfor %}</select></label>
+      </div>
+      <label>Level ids, comma separated<input name="level_ids" class="mono" required></label>
+      <div class="split">
+        <label>Text colour<input type="color" name="text_colour" value="#ffffff"></label>
+        <label>Bar colour<input type="color" name="bar_colour" value="#b48cff"></label>
+      </div>
+      <button class="button small" type="submit">Create pack</button>
+    </form>
+  </div>
+  <div class="stack">
+    <div class="section-head"><h2>Gauntlets</h2></div>
+    <form method="post" data-bulk class="stack">
+      {{ csrf() }}
+      <div class="card table-card">
+        <table class="board dense">
+          <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Name</th><th>Levels</th></tr></thead>
+          <tbody>
+          {% for gauntlet in packs.gauntlets %}
+          <tr>{{ check(gauntlet.id) }}<td class="mono">{{ gauntlet.id }}</td><td>{{ gauntlet.id|gauntlet }}</td><td class="mono small">{{ gauntlet.level_ids|join(", ") }}</td></tr>
+          {% else %}
+          {{ empty("No gauntlets.", 4) }}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% call bulk_bar() %}<button class="button small danger" formaction="/admin/packs/gauntlets/remove" data-confirm="Remove the selected gauntlets?">Remove selected</button>{% endcall %}
+    </form>
+    <form method="post" action="/admin/packs/gauntlets" class="card">
+      {{ csrf() }}
+      <h3>Set a gauntlet</h3>
+      <label>Gauntlet<select name="gauntlet_id">{% for gauntlet_id in gauntlet_ids %}<option value="{{ gauntlet_id }}">{{ gauntlet_id }} · {{ gauntlet_id|gauntlet }}</option>{% endfor %}</select></label>
+      <label>Exactly five level ids, comma separated<input name="level_ids" class="mono" required></label>
+      <button class="button small" type="submit">Save gauntlet</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

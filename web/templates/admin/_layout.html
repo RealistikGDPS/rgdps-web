@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import error_box %}
+{% block head %}<link rel="stylesheet" href="/static/css/admin.css?v={{ static_version }}">{% endblock %}
+{% block title %}{% block admin_title %}Admin{% endblock %} · Admin · {{ site_name }}{% endblock %}
+{% block page_class %} wide{% endblock %}
+{% block content %}
+{% set here = request.url.path %}
+<div class="admin">
+  <aside class="rail" aria-label="Admin sections">
+    <p class="rail-brand"><span class="dot up"></span>Control room</p>
+    <nav>
+      <span class="rail-group">Overview</span>
+      <a href="/admin" class="{% if here == '/admin' %}active{% endif %}" data-key="d"><span>Dashboard</span><kbd>d</kbd></a>
+      <a href="/admin/status" class="{% if here.startswith('/admin/status') %}active{% endif %}" data-key="o"><span>Status</span><kbd>o</kbd></a>
+      <span class="rail-group">People</span>
+      <a href="/admin/users" class="{% if here.startswith('/admin/users') %}active{% endif %}" data-key="u"><span>Users</span><kbd>u</kbd></a>
+      <a href="/admin/comments" class="{% if here.startswith('/admin/comments') %}active{% endif %}" data-key="c"><span>Comments</span><kbd>c</kbd></a>
+      <a href="/admin/moderation" class="{% if here.startswith('/admin/moderation') %}active{% endif %}" data-key="m"><span>Moderation</span><kbd>m</kbd></a>
+      <span class="rail-group">Content</span>
+      <a href="/admin/levels" class="{% if here.startswith('/admin/levels') %}active{% endif %}" data-key="l"><span>Levels</span><kbd>l</kbd></a>
+      <a href="/admin/timely" class="{% if here.startswith('/admin/timely') %}active{% endif %}" data-key="t"><span>Timely</span><kbd>t</kbd></a>
+      <a href="/admin/songs" class="{% if here.startswith('/admin/songs') %}active{% endif %}" data-key="s"><span>Songs</span><kbd>s</kbd></a>
+      <a href="/admin/rewards" class="{% if here.startswith('/admin/rewards') %}active{% endif %}" data-key="r"><span>Rewards</span><kbd>r</kbd></a>
+      <a href="/admin/packs" class="{% if here.startswith('/admin/packs') %}active{% endif %}" data-key="p"><span>Packs</span><kbd>p</kbd></a>
+      <span class="rail-group">Server</span>
+      <a href="/admin/roles" class="{% if here.startswith('/admin/roles') %}active{% endif %}" data-key="e"><span>Roles</span><kbd>e</kbd></a>
+      {% if viewer.may(permission.ADMIN_SETTINGS) %}<a href="/admin/settings" class="{% if here.startswith('/admin/settings') %}active{% endif %}" data-key="g"><span>Settings</span><kbd>g</kbd></a>{% endif %}
+    </nav>
+    <p class="rail-foot muted small">Press <kbd>g</kbd> then a key to jump. <kbd>/</kbd> searches.</p>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-head">
+      <div>
+        <p class="eyebrow">{% block admin_eyebrow %}Admin{% endblock %}</p>
+        <h1>{% block admin_heading %}{% endblock %}</h1>
+      </div>
+      <div class="admin-actions">{% block admin_actions %}{% endblock %}</div>
+    </header>
+    {% if error is defined %}{{ error_box(error) }}{% endif %}
+    {% block admin %}{% endblock %}
+  </div>
+</div>
+<dialog id="confirm" class="dialog">
+  <p class="dialog-title">Are you sure?</p>
+  <p class="muted" data-confirm-text></p>
+  <div class="dialog-actions">
+    <button type="button" class="button ghost small" data-confirm-cancel>Cancel</button>
+    <button type="button" class="button danger small" data-confirm-ok>Confirm</button>
+  </div>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/js/admin.js?v={{ static_version }}" defer></script>{% endblock %}

@@ -1,8 +1,9 @@
 # RealistikGDPS website
 
 The public site of [RealistikGDPS](https://rgdps.ussr.pl): downloads,
-leaderboards, server statistics, player profiles with rendered icons, and
-account management (registration, login, password and username changes).
+leaderboards, server statistics, player profiles with rendered icons, account
+management (registration, login, password and username changes) and, under
+`/admin`, the control room for operators.
 
 It is a FastAPI application rendering Jinja2 templates, built on
 [poltergeist-core](https://github.com/RealistikGDPS/poltergeist-core) for
@@ -13,12 +14,32 @@ the account then works in Geometry Dash 2.2 as well.
 ## Layout
 
 ```
-web/api/         Routers, template rendering, cookies, dependencies
-web/services/    Site-only orchestration (captcha, confirmations) over core
-web/adapters/    Cloudflare Turnstile client
-web/icons/       Icon rendering from the game's sprite atlases
-web/templates/   Jinja2 templates
-web/static/      Stylesheet, script, fonts, images
+web/api/           Routers, template rendering, cookies, dependencies
+web/api/admin/     One router per admin page
+web/services/      Site-only orchestration (captcha, confirmations) over core
+web/services/admin/  Read orchestration and bulk actions for the admin pages
+web/adapters/      Cloudflare Turnstile and game server clients
+web/icons/         Icon rendering from the game's sprite atlases
+web/templates/     Jinja2 templates; admin/ holds the control room
+web/static/        Stylesheets, scripts, fonts, images
+```
+
+## Admin area
+
+`/admin` is visible to accounts holding the `admin.access` permission and
+signs every action as the signed-in account, so the server's own permission
+checks apply and each change lands in the moderation log. It covers the
+dashboard, users, levels and their rating and report queues, comments,
+the moderation log and bans, daily, weekly and event queues, songs, quests
+and vault codes, map packs and gauntlets, roles, live server settings
+(registration, level uploads, tool switches, download links; needs
+`admin.settings`) and a stack status page that probes MySQL, Redis, object
+storage and the game server, refreshing itself every
+`WEB_STATUS_POLL_SECONDS`. Rebuilding the leaderboards needs
+`admin.maintenance`. The first administrator is granted by hand:
+
+```sql
+INSERT INTO user_roles (user_id, role_id) VALUES (<id>, 5);
 ```
 
 ## Running

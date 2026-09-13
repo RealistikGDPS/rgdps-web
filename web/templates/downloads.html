@@ -10,19 +10,19 @@
   <article class="card download">
     <h2>PC</h2>
     <p>Windows build. Unzip anywhere and run <code>RealistikGDPS.final.exe</code>. Works alongside your Steam copy.</p>
-    <a class="button" href="{{ download_pc_url }}">Download for PC</a>
+    {% if site.download_pc_url %}<a class="button" href="{{ site.download_pc_url }}">Download for PC</a>{% else %}<span class="tag off">Not available yet</span>{% endif %}
   </article>
   <article class="card download">
     <h2>Android</h2>
     <p>Installs as its own app next to the official one. Allow installs from unknown sources when asked.</p>
-    <a class="button" href="{{ download_android_url }}">Download for Android</a>
+    {% if site.download_android_url %}<a class="button" href="{{ site.download_android_url }}">Download for Android</a>{% else %}<span class="tag off">Not available yet</span>{% endif %}
   </article>
 </section>
 <section class="card">
   <h3>First launch</h3>
   <ol class="steps">
     <li>Open the game and go to the account screen.</li>
-    <li>Register in game, or <a href="/register">register here</a> first and log in with the same details.</li>
+    <li>Register in game{% if site.registration_enabled %}, or <a href="/register">register here</a> first and log in with the same details{% endif %}.</li>
     <li>Had an account on the old 2.1 server? <a href="/login">Log in here</a> once and it will work in 2.2 as well.</li>
   </ol>
 </section>

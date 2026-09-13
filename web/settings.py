@@ -15,8 +15,10 @@ TURNSTILE_SITE_KEY = os.environ["TURNSTILE_SITE_KEY"]
 TURNSTILE_SECRET_KEY = os.environ["TURNSTILE_SECRET_KEY"]
 TURNSTILE_TIMEOUT_SECONDS = float(os.environ["TURNSTILE_TIMEOUT_SECONDS"])
 
-WEB_DOWNLOAD_PC_URL = os.environ["WEB_DOWNLOAD_PC_URL"]
-WEB_DOWNLOAD_ANDROID_URL = os.environ["WEB_DOWNLOAD_ANDROID_URL"]
+# The game server as reached on the internal network, for the status page.
+WEB_GAME_SERVER_URL = os.environ["WEB_GAME_SERVER_URL"].rstrip("/")
+WEB_GAME_SERVER_TIMEOUT_SECONDS = float(os.environ["WEB_GAME_SERVER_TIMEOUT_SECONDS"])
+WEB_STATUS_POLL_SECONDS = int(os.environ["WEB_STATUS_POLL_SECONDS"])
 
 # The game's Resources/icons directory plus the robot and spider animation
 # descriptions, and which texture quality of them to read.

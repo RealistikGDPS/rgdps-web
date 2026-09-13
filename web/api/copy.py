@@ -1,5 +1,14 @@
 from poltergeist_core.services import ServiceError
+from poltergeist_core.services.administration import AdministrationError
 from poltergeist_core.services.auth import AuthError
+from poltergeist_core.services.comments import CommentError
+from poltergeist_core.services.levels import LevelError
+from poltergeist_core.services.moderation import ModerationError
+from poltergeist_core.services.packs import PackError
+from poltergeist_core.services.roles import RoleError
+from poltergeist_core.services.server_settings import ServerSettingsError
+from poltergeist_core.services.songs import SongError
+from poltergeist_core.services.timely import TimelyError
 from poltergeist_core.services.users import UserError
 
 from web.errors import WebError
@@ -30,15 +39,67 @@ def explain(error: ServiceError) -> str:
         case AuthError.PASSWORD_TOO_SHORT:
             return "Passwords need at least 6 characters."
         case AuthError.PASSWORD_INVALID:
-            return "Passwords are at most 64 characters."
+            return "Passwords are between 6 and 64 characters."
         case AuthError.EMAIL_INVALID:
             return "That email address does not look right."
         case AuthError.EMAIL_TAKEN:
             return "An account with that email address already exists."
         case AuthError.RENAME_TOO_SOON:
             return "You can only change your username once every 30 days."
-        case AuthError.USER_NOT_FOUND | UserError.NOT_FOUND:
+        case AuthError.REGISTRATION_DISABLED:
+            return "Registration is closed at the moment."
+        case AuthError.USER_NOT_FOUND | UserError.NOT_FOUND | RoleError.USER_NOT_FOUND:
             return "That player does not exist."
+        case (
+            AdministrationError.NOT_PERMITTED
+            | ModerationError.NOT_PERMITTED
+            | ModerationError.NOT_MODERATOR
+            | RoleError.NOT_PERMITTED
+            | TimelyError.NOT_PERMITTED
+            | PackError.NOT_PERMITTED
+            | LevelError.NOT_PERMITTED
+            | CommentError.NOT_PERMITTED
+            | SongError.NOT_ALLOWED
+            | ServerSettingsError.NOT_PERMITTED
+        ):
+            return "You are not allowed to do that."
+        case ModerationError.TARGET_PROTECTED:
+            return "That account is not below yours, so you cannot act on it."
+        case RoleError.ROLE_TOO_HIGH:
+            return "That role is not below your own, so you cannot hand it out."
+        case RoleError.NOT_FOUND:
+            return "That role does not exist."
+        case LevelError.NOT_FOUND | TimelyError.LEVEL_NOT_FOUND:
+            return "That level does not exist."
+        case LevelError.LOCKED:
+            return "That level is locked."
+        case LevelError.UPLOADS_DISABLED:
+            return "Level uploads are switched off at the moment."
+        case SongError.NOT_FOUND:
+            return "That song does not exist."
+        case CommentError.NOT_FOUND:
+            return "That comment does not exist."
+        case (
+            AdministrationError.NOT_FOUND
+            | ModerationError.NOT_FOUND
+            | TimelyError.NOT_FOUND
+            | PackError.NOT_FOUND
+        ):
+            return "That no longer exists."
+        case AdministrationError.TAKEN:
+            return "That name is already taken."
+        case PackError.INVALID:
+            return "Every level id must exist, and a gauntlet needs exactly five."
+        case ServerSettingsError.INVALID:
+            return "Download links must be HTTPS or a path on this site."
+        case (
+            AdministrationError.INVALID
+            | ModerationError.INVALID
+            | SongError.INVALID
+            | LevelError.INVALID
+            | CommentError.INVALID
+        ):
+            return "Those values were not accepted."
         case WebError.CSRF_INVALID:
             return "The form expired. Go back, reload the page and try again."
         case WebError.CAPTCHA_FAILED:
@@ -47,6 +108,12 @@ def explain(error: ServiceError) -> str:
             return "The passwords do not match."
         case WebError.NOT_FOUND:
             return "There is nothing here."
+        case WebError.TOOL_DISABLED:
+            return "This tool is switched off right now."
+        case WebError.NOTHING_SELECTED:
+            return "Select at least one row first."
+        case WebError.INVALID_INPUT:
+            return "That value could not be read."
         case IconError.UNKNOWN_KIND | IconError.UNKNOWN_ICON | IconError.INVALID_COLOUR:
             return "That icon cannot be drawn."
         case _:

@@ -1,0 +1,52 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager, when with context %}
+{% from "admin/_widgets.html" import toolbar, field, check, select_all, bulk_bar, drawer, empty, user_link %}
+{% block admin_title %}Comments{% endblock %}
+{% block admin_eyebrow %}People · {{ listing.total|number }} {{ "level comments" if listing.kind == "levels" else "profile posts" }}{% endblock %}
+{% block admin_heading %}Comments{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Comment kind">
+  <a href="/admin/comments/levels" {% if listing.kind == "levels" %}class="active"{% endif %}>Level comments</a>
+  <a href="/admin/comments/profiles" {% if listing.kind == "profiles" %}class="active"{% endif %}>Profile posts</a>
+</nav>
+{% endblock %}
+{% block admin %}
+{% call toolbar() %}
+  {% call field("Content contains", grow=True) %}<input name="q" value="{{ listing.query }}" data-search>{% endcall %}
+  {% call field("Author id") %}<input name="author" value="{{ listing.author }}" inputmode="numeric" size="8">{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Author</th>{% if listing.kind == "levels" %}<th>On</th>{% endif %}<th class="wide">Content</th>{% if listing.kind == "levels" %}<th class="num">%</th>{% endif %}<th class="num">Likes</th><th>When</th></tr></thead>
+      <tbody>
+      {% for row in listing.rows %}
+      <tr>
+        {{ check(row.id) }}
+        <td class="mono">{{ row.id }}</td>
+        <td>{{ user_link(row.author, row.author_id) }}</td>
+        {% if listing.kind == "levels" %}<td>{% if row.level %}<a href="/admin/levels/{{ row.level.id }}">{{ row.level.name }}</a>{% elif row.list_id %}<span class="muted">list #{{ row.list_id }}</span>{% else %}<span class="muted">gone</span>{% endif %}</td>{% endif %}
+        <td class="wide content" title="{{ row.content }}">{{ row.content }}</td>
+        {% if listing.kind == "levels" %}<td class="num">{{ row.percent }}</td>{% endif %}
+        <td class="num">{{ row.likes|number }}</td>
+        <td class="muted">{{ when(row.created_at) }}</td>
+      </tr>
+      {% else %}
+      {{ empty("Nothing matches.", 8) }}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% call bulk_bar() %}
+    <button class="button small danger" formaction="/admin/comments/{{ listing.kind }}/delete{{ back_query(request) }}" data-confirm="Delete the selected comments?">Delete</button>
+    {% call drawer("Comment-ban the authors") %}
+      <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="3"></label>
+      <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+      <label class="field grow"><span>Reason</span><input name="reason" maxlength="255"></label>
+      <button class="button small danger" formaction="/admin/comments/{{ listing.kind }}/ban-authors{{ back_query(request) }}">Ban authors</button>
+    {% endcall %}
+  {% endcall %}
+</form>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% endblock %}

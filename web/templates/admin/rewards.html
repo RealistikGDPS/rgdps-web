@@ -1,0 +1,84 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, empty %}
+{% block admin_title %}Rewards{% endblock %}
+{% block admin_eyebrow %}Content · quests and vault codes{% endblock %}
+{% block admin_heading %}Rewards{% endblock %}
+{% block admin %}
+<section class="split align-start">
+  <div class="stack">
+    <div class="section-head"><h2>Quests</h2></div>
+    <form method="post" data-bulk class="stack">
+      {{ csrf() }}
+      <div class="card table-card">
+        <table class="board dense">
+          <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Name</th><th>Item</th><th class="num">Amount</th><th class="num">Diamonds</th></tr></thead>
+          <tbody>
+          {% for quest in rewards.quests %}
+          <tr>{{ check(quest.id) }}<td class="mono">{{ quest.id }}</td><td>{{ quest.name }}</td><td>{{ quest.item|quest_item }}</td><td class="num">{{ quest.amount|number }}</td><td class="num">{{ quest.diamonds }}</td></tr>
+          {% else %}
+          {{ empty("No quests.", 6) }}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% call bulk_bar() %}<button class="button small danger" formaction="/admin/rewards/quests/remove" data-confirm="Remove the selected quests?">Remove selected</button>{% endcall %}
+    </form>
+    <form method="post" action="/admin/rewards/quests" class="card">
+      {{ csrf() }}
+      <h3>New quest</h3>
+      <label>Name<input name="name" maxlength="64" required></label>
+      <label>Item<select name="item">{% for option in quest_items %}<option value="{{ option.value }}">{{ option|quest_item }}</option>{% endfor %}</select></label>
+      <div class="split">
+        <label>Amount<input type="number" name="amount" min="1" value="100" required></label>
+        <label>Diamonds<input type="number" name="diamonds" min="1" max="255" value="5" required></label>
+      </div>
+      <button class="button small" type="submit">Create quest</button>
+    </form>
+  </div>
+  <div class="stack">
+    <div class="section-head"><h2>Vault codes</h2></div>
+    <form method="post" data-bulk class="stack">
+      {{ csrf() }}
+      <div class="card table-card">
+        <table class="board dense">
+          <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Code</th><th>Chest</th><th>Items</th><th class="num">Claims</th><th>Expires</th></tr></thead>
+          <tbody>
+          {% for row in rewards.codes %}
+          <tr>
+            {{ check(row.reward.id) }}
+            <td class="mono">{{ row.reward.id }}</td>
+            <td class="mono">{{ row.reward.reward_key }}</td>
+            <td>{{ row.reward.chest_type|chest_type }}</td>
+            <td class="small">{% for item in row.items %}{{ item.amount }}× {{ item.item|reward_item }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+            <td class="num">{{ row.claims }} / {{ row.reward.max_claims if row.reward.max_claims is not none else "∞" }}</td>
+            <td class="muted">{% if row.reward.expires_at %}{{ row.reward.expires_at|stamp }}{% else %}never{% endif %}</td>
+          </tr>
+          {% else %}
+          {{ empty("No vault codes.", 7) }}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% call bulk_bar() %}<button class="button small danger" formaction="/admin/rewards/codes/remove" data-confirm="Remove the selected codes?">Remove selected</button>{% endcall %}
+    </form>
+    <form method="post" action="/admin/rewards/codes" class="card">
+      {{ csrf() }}
+      <h3>New vault code</h3>
+      <label>Code (typed by players)<input name="reward_key" maxlength="64" pattern="[a-z0-9_\-]{2,64}" required class="mono"></label>
+      <div class="split">
+        <label>Chest look<select name="chest_type">{% for option in chest_types %}<option value="{{ option.value }}">{{ option|chest_type }}</option>{% endfor %}</select></label>
+        <label>Max claims (0 = unlimited)<input type="number" name="max_claims" min="0" value="0"></label>
+      </div>
+      <label>Expires on (optional)<input type="date" name="expires_on"></label>
+      {% for slot in slots %}
+      <div class="split">
+        <label>Item {{ slot }}<select name="item_{{ slot }}"><option value="">None</option>{% for option in reward_items %}<option value="{{ option.value }}">{{ option|reward_item }}</option>{% endfor %}</select></label>
+        <label>Amount<input type="number" name="amount_{{ slot }}" min="1" value="100"></label>
+      </div>
+      {% endfor %}
+      <button class="button small" type="submit">Create code</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

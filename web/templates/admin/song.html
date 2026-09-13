@@ -1,0 +1,27 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf with context %}
+{% from "admin/_widgets.html" import facts %}
+{% block admin_title %}{{ song.name }}{% endblock %}
+{% block admin_eyebrow %}Content · song #{{ song.id }} · {{ song.source|song_source }}{% endblock %}
+{% block admin_heading %}{{ song.name }}{% endblock %}
+{% block admin_actions %}<a class="button small ghost" href="/admin/songs">All songs</a>{% endblock %}
+{% block admin %}
+<section class="split">
+  <div class="card">
+    <h3>Edit</h3>
+    <form method="post" action="/admin/songs/{{ song.id }}">
+      {{ csrf() }}
+      <label>Name<input name="name" value="{{ song.name }}" maxlength="128" required></label>
+      <label>Artist<input name="artist" value="{{ song.artist_name }}" maxlength="64" required></label>
+      <label>Direct audio URL<input name="url" type="url" value="{{ song.url }}" maxlength="512" required></label>
+      <label>Size in MB<input name="size_mb" type="number" min="0.1" step="0.01" value="{{ '%.2f'|format(song.size_bytes / 1048576) }}" required></label>
+      <button class="button small" type="submit">Save song</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Facts</h3>
+    {{ facts([("State", "disabled" if song.disabled_at else "live"), ("Uploaded by", ("#" ~ song.uploaded_by_user_id) if song.uploaded_by_user_id else "server"), ("Artist id", song.artist_id), ("Size", song.size_bytes|megabytes)]) }}
+    {% if song.url %}<p><audio controls preload="none" src="{{ song.url }}"></audio></p>{% endif %}
+  </div>
+</section>
+{% endblock %}

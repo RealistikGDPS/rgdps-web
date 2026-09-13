@@ -1,0 +1,50 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, when with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, empty, level_link %}
+{% block admin_title %}Timely{% endblock %}
+{% block admin_eyebrow %}Content · daily, weekly and event levels{% endblock %}
+{% block admin_heading %}Timely{% endblock %}
+{% block admin %}
+<section class="split three align-start">
+  {% for queue in queues %}
+  <div class="stack">
+    <div class="section-head"><h2>{{ queue.type|timely_type }}</h2></div>
+    <article class="kpi card">
+      <span class="kpi-label">Live now{% if queue.current %} · #{{ queue.current.timely.sequence }}{% endif %}</span>
+      <span class="kpi-value text">{% if queue.current %}{{ level_link(queue.current.level, queue.current.timely.level_id) }}{% else %}nothing{% endif %}</span>
+      {% if queue.current %}<span class="delta flat">{{ queue.seconds_left|duration }} left</span>{% endif %}
+    </article>
+    <form method="post" data-bulk class="stack">
+      {{ csrf() }}
+      <div class="card table-card">
+        <table class="board dense">
+          <thead><tr>{{ select_all() }}<th class="num">No.</th><th>Level</th><th>Starts</th></tr></thead>
+          <tbody>
+          {% for entry in queue.entries %}
+          <tr>
+            {{ check(entry.timely.id) }}
+            <td class="num">{{ entry.timely.sequence }}</td>
+            <td><span class="badge state-{{ entry.status }}">{{ entry.status }}</span> {{ level_link(entry.level, entry.timely.level_id) }}</td>
+            <td class="muted">{{ entry.timely.starts_at|stamp }}</td>
+          </tr>
+          {% else %}
+          {{ empty("Nothing scheduled.", 4) }}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% call bulk_bar() %}
+        <button class="button small danger" formaction="/admin/timely/remove" data-confirm="Remove the selected entries? Their numbers are kept.">Remove selected</button>
+      {% endcall %}
+    </form>
+    <form method="post" action="/admin/timely/schedule" class="card">
+      {{ csrf() }}
+      <input type="hidden" name="timely_type" value="{{ queue.type.value }}">
+      <label>Level id to append<input type="number" name="level_id" min="1" required></label>
+      <button class="button small" type="submit">Schedule</button>
+    </form>
+  </div>
+  {% endfor %}
+</section>
+<p class="muted small">A new entry starts when the previous one ends, or right away when nothing valid is live. Removing an entry keeps its number.</p>
+{% endblock %}

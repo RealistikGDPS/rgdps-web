@@ -1,15 +1,17 @@
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Request
 from fastapi import Response
 from poltergeist_core.resources import LeaderboardKind
 from poltergeist_core.services import users
 
+from web.api import dependencies
 from web.api import response
 from web.api.dependencies import RequiresContext
 from web.api.dependencies import RequiresViewer
 from web.services import pages
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(dependencies.site)])
 
 _LEADERBOARD_PAGE_SIZE = 50
 

@@ -1,8 +1,10 @@
 from gdformat.requests import Client
 from gdformat.requests import RegisterRequest
+from poltergeist_core.resources import ServerSettings
 from poltergeist_core.services import ServiceError
 from poltergeist_core.services import auth
 from poltergeist_core.services._common import AbstractContext
+from poltergeist_core.services.auth import AuthError
 
 from web.adapters.turnstile import ImplementsCaptcha
 from web.errors import WebError
@@ -11,6 +13,7 @@ from web.errors import WebError
 async def register(
     ctx: AbstractContext,
     captcha: ImplementsCaptcha,
+    site: ServerSettings,
     *,
     username: str,
     email: str,
@@ -19,8 +22,11 @@ async def register(
     captcha_token: str,
     ip: str,
 ) -> ServiceError.OnSuccess[int]:
-    """The captcha is checked before anything else so bots never consume the
-    registration rate limits."""
+    """A closed door is reported before the captcha, and the captcha before
+    anything else, so bots never consume the registration rate limits."""
+
+    if not site.registration_enabled:
+        return AuthError.REGISTRATION_DISABLED
 
     if password != confirmation:
         return WebError.PASSWORDS_DIFFER

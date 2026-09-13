@@ -16,14 +16,18 @@ from poltergeist_core.adapters import boomlings
 from poltergeist_core.adapters import mysql
 from poltergeist_core.adapters import redis
 from poltergeist_core.adapters import storage
+from poltergeist_core.services import server_settings
+from poltergeist_core.utilities import clock
 from poltergeist_core.utilities import logging
 
 from web import settings
+from web.adapters import gameserver
 from web.adapters import turnstile
 from web.icons import IconCache
 from web.icons import renderer
 
 from . import account
+from . import admin
 from . import auth
 from . import health
 from . import icons
@@ -31,6 +35,7 @@ from . import pages
 from . import response
 from . import templating
 from . import tools
+from .context import HTTPContext
 from .interruption import ServiceInterruptionException
 
 logger = logging.get_logger(__name__)
@@ -50,6 +55,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
     yield
 
+    await app.state.gameserver.close()
     await app.state.captcha.close()
     await app.state.boomlings.close()
     await app.state.redis.aclose()
@@ -65,6 +71,7 @@ def create_app() -> FastAPI:
     initialise_storage(app)
     initialise_boomlings(app)
     initialise_captcha(app)
+    initialise_gameserver(app)
     initialise_icons(app)
     initialise_interruptions(app)
     initialise_request_tracing(app)
@@ -100,6 +107,12 @@ def initialise_captcha(app: FastAPI) -> None:
     logger.debug("Attached the captcha client to the app instance.")
 
 
+def initialise_gameserver(app: FastAPI) -> None:
+    app.state.gameserver = gameserver.default()
+    app.state.started_at = clock.now()
+    logger.debug("Attached the game server client to the app instance.")
+
+
 def initialise_icons(app: FastAPI) -> None:
     app.state.icon_cache = IconCache(settings.WEB_ICON_CACHE_SIZE)
     logger.debug("Attached the icon cache to the app instance.")
@@ -112,29 +125,38 @@ def initialise_interruptions(app: FastAPI) -> None:
     ) -> Response:
         return exception.response
 
+    async def error_page(
+        request: Request, status: HTTPStatus, message: str
+    ) -> Response:
+        # These handlers run before any dependency, so the site settings the
+        # chrome needs are loaded here by hand.
+        request.state.site = await server_settings.current(HTTPContext(request))
+
+        return response.render(
+            request,
+            "error.html",
+            viewer=None,
+            status=status,
+            message=message,
+            status_code=status,
+        )
+
     @app.exception_handler(RequestValidationError)
     async def handle_validation(
         request: Request, _: RequestValidationError
     ) -> Response:
-        return response.render(
-            request,
-            "error.html",
-            viewer=None,
-            status=HTTPStatus.NOT_FOUND,
-            message="There is nothing here.",
-            status_code=HTTPStatus.NOT_FOUND,
-        )
+        if request.method == "POST":
+            return await error_page(
+                request,
+                HTTPStatus.BAD_REQUEST,
+                "The form was not filled in correctly.",
+            )
+
+        return await error_page(request, HTTPStatus.NOT_FOUND, "There is nothing here.")
 
     @app.exception_handler(HTTPStatus.NOT_FOUND)
     async def handle_not_found(request: Request, _: Exception) -> Response:
-        return response.render(
-            request,
-            "error.html",
-            viewer=None,
-            status=HTTPStatus.NOT_FOUND,
-            message="There is nothing here.",
-            status_code=HTTPStatus.NOT_FOUND,
-        )
+        return await error_page(request, HTTPStatus.NOT_FOUND, "There is nothing here.")
 
     logger.debug("Initialised the service interruption handler.")
 
@@ -160,6 +182,7 @@ def create_routes(app: FastAPI) -> None:
     app.include_router(auth.router)
     app.include_router(account.router)
     app.include_router(tools.router)
+    app.include_router(admin.create_router())
     app.include_router(icons.router)
     app.include_router(health.router)
     app.mount("/static", StaticFiles(directory=_STATIC_DIRECTORY), name="static")

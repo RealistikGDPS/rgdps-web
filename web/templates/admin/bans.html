@@ -1,0 +1,51 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager, when with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, empty, user_link %}
+{% block admin_title %}Active bans{% endblock %}
+{% block admin_eyebrow %}People · {{ listing.total|number }} active bans{% endblock %}
+{% block admin_heading %}Active bans{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Moderation"><a href="/admin/moderation">Event log</a><a class="active" href="/admin/moderation/bans">Active bans</a></nav>
+{% endblock %}
+{% block admin %}
+<section class="split wide-left">
+  <form method="post" data-bulk class="stack">
+    {{ csrf() }}
+    <div class="card table-card">
+      <table class="board dense">
+        <thead><tr>{{ select_all() }}<th>Player</th><th>Type</th><th class="wide">Reason</th><th>Issued by</th><th>Since</th><th>Expires</th></tr></thead>
+        <tbody>
+        {% for row in listing.rows %}
+        <tr>
+          {{ check(row.ban.id) }}
+          <td>{{ user_link(row.user, row.ban.user_id) }}</td>
+          <td><span class="chip ban-{{ row.ban.type }}">{{ row.ban.type|ban_type }}</span></td>
+          <td class="wide content">{{ row.ban.reason or "" }}</td>
+          <td>{% if row.ban.issued_by_user_id is none %}<span class="muted">import</span>{% else %}{{ user_link(row.issuer, row.ban.issued_by_user_id) }}{% endif %}</td>
+          <td class="muted">{{ when(row.ban.created_at) }}</td>
+          <td class="muted">{% if row.ban.expires_at %}{{ row.ban.expires_at|stamp }}{% else %}never{% endif %}</td>
+        </tr>
+        {% else %}
+        {{ empty("Nobody is banned.", 7) }}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% call bulk_bar() %}
+      <button class="button small" formaction="/admin/moderation/bans/lift{{ back_query(request) }}">Lift selected bans</button>
+    {% endcall %}
+    {{ pager(listing.page, listing.size, listing.total) }}
+  </form>
+  <div class="card">
+    <h3>Ban by id</h3>
+    <form method="post" action="/admin/moderation/bans">
+      {{ csrf() }}
+      <label>User id<input type="number" name="user_id" min="1" required></label>
+      <label>Type<select name="ban_type">{% for option in ban_types %}<option value="{{ option }}">{{ option|ban_type }}</option>{% endfor %}</select></label>
+      <label>Days (0 = permanent)<input type="number" name="days" min="0" max="3650" value="7"></label>
+      <label>Reason<input name="reason" maxlength="255"></label>
+      <button class="button small danger" type="submit">Ban</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

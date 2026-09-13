@@ -1,20 +1,33 @@
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Request
 from fastapi import Response
 
+from web.api import dependencies
 from web.api import response
+from web.api.dependencies import RequiresSite
 from web.api.dependencies import RequiresViewer
+from web.services import tools
+from web.services.tools import Tool
 
-router = APIRouter(prefix="/tools")
+router = APIRouter(prefix="/tools", dependencies=[Depends(dependencies.site)])
 
 
 @router.get("")
-async def tools(request: Request, viewer: RequiresViewer) -> Response:
-    return response.render(request, "tools/index.html", viewer=viewer)
+async def index(
+    request: Request, viewer: RequiresViewer, site: RequiresSite
+) -> Response:
+    return response.render(
+        request, "tools/index.html", viewer=viewer, cards=tools.cards(site)
+    )
 
 
 @router.get("/song-reupload")
-async def song_reupload(request: Request, viewer: RequiresViewer) -> Response:
+async def song_reupload(
+    request: Request, viewer: RequiresViewer, site: RequiresSite
+) -> Response:
+    response.unwrap(request, tools.require(site, Tool.SONG_REUPLOAD), viewer=viewer)
+
     return response.render(
         request,
         "tools/placeholder.html",
@@ -28,7 +41,11 @@ async def song_reupload(request: Request, viewer: RequiresViewer) -> Response:
 
 
 @router.get("/level-reupload")
-async def level_reupload(request: Request, viewer: RequiresViewer) -> Response:
+async def level_reupload(
+    request: Request, viewer: RequiresViewer, site: RequiresSite
+) -> Response:
+    response.unwrap(request, tools.require(site, Tool.LEVEL_REUPLOAD), viewer=viewer)
+
     return response.render(
         request,
         "tools/placeholder.html",

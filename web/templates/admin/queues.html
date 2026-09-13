@@ -1,0 +1,65 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, when with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, empty, level_link, user_link %}
+{% block admin_title %}Queues{% endblock %}
+{% block admin_eyebrow %}Content · {{ queues.suggestions|length }} sent, {{ queues.reports|length }} reported{% endblock %}
+{% block admin_heading %}Queues{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Levels"><a href="/admin/levels">Browse</a><a class="active" href="/admin/levels/queues">Queues</a></nav>
+{% endblock %}
+{% block admin %}
+<section class="split">
+  <form method="post" data-bulk class="stack">
+    {{ csrf() }}
+    <div class="section-head"><h2>Sent for rating</h2></div>
+    <div class="card table-card">
+      <table class="board dense">
+        <thead><tr>{{ select_all() }}<th>Level</th><th>Sent by</th><th class="num">Stars</th><th>Feature</th><th>When</th></tr></thead>
+        <tbody>
+        {% for row in queues.suggestions %}
+        <tr>
+          {{ check(row.suggestion.level_id) }}
+          <td>{{ level_link(row.level, row.suggestion.level_id) }}</td>
+          <td>{{ user_link(row.sender, row.suggestion.user_id) }}</td>
+          <td class="num">{{ row.suggestion.stars if row.suggestion.stars is not none else "–" }}</td>
+          <td>{{ row.suggestion.feature|send_feature if row.suggestion.feature is not none else "–" }}</td>
+          <td class="muted">{{ when(row.suggestion.created_at) }}</td>
+        </tr>
+        {% else %}
+        {{ empty("Nothing is waiting for a rating.", 6) }}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% call bulk_bar() %}
+      <button class="button small" formaction="/admin/levels/suggestions/rate?next=/admin/levels/queues">Rate as suggested</button>
+      <button class="button small ghost" formaction="/admin/levels/suggestions/dismiss?next=/admin/levels/queues">Dismiss</button>
+    {% endcall %}
+  </form>
+  <form method="post" data-bulk class="stack">
+    {{ csrf() }}
+    <div class="section-head"><h2>Reported</h2></div>
+    <div class="card table-card">
+      <table class="board dense">
+        <thead><tr>{{ select_all() }}<th>Level</th><th>Creator</th><th class="num">Reports</th></tr></thead>
+        <tbody>
+        {% for row in queues.reports %}
+        <tr>
+          {{ check(row.level.id) }}
+          <td><a href="/admin/levels/{{ row.level.id }}">{{ row.level.name }}</a></td>
+          <td>{{ user_link(row.creator, row.level.user_id) }}</td>
+          <td class="num">{{ row.reports }}</td>
+        </tr>
+        {% else %}
+        {{ empty("No open reports.", 4) }}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% call bulk_bar() %}
+      <button class="button small" formaction="/admin/levels/reports/resolve?next=/admin/levels/queues">Resolve reports</button>
+      <button class="button small danger" formaction="/admin/levels/delete?next=/admin/levels/queues" data-confirm="Delete the selected reported levels?">Delete levels</button>
+    {% endcall %}
+  </form>
+</section>
+{% endblock %}

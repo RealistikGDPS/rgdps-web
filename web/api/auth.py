@@ -1,22 +1,25 @@
 from typing import Annotated
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Form
 from fastapi import Request
 from fastapi import Response
 from poltergeist_core.services import auth
 from poltergeist_core.services.auth import WebLogin
 
+from web.api import dependencies
 from web.api import response
 from web.api.context import client_ip
 from web.api.dependencies import RequiresCaptcha
 from web.api.dependencies import RequiresContext
 from web.api.dependencies import RequiresCsrf
+from web.api.dependencies import RequiresSite
 from web.api.dependencies import RequiresTransaction
 from web.api.dependencies import RequiresViewer
 from web.services import accounts
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(dependencies.site)])
 
 
 @router.get("/login")
@@ -74,6 +77,7 @@ async def register_submit(
     request: Request,
     ctx: RequiresTransaction,
     captcha: RequiresCaptcha,
+    site: RequiresSite,
     _: RequiresCsrf,
     username: Annotated[str, Form()],
     email: Annotated[str, Form()],
@@ -85,6 +89,7 @@ async def register_submit(
     result = await accounts.register(
         ctx,
         captcha,
+        site,
         username=username,
         email=email,
         password=password,

@@ -1,0 +1,119 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, glyph, icon, when with context %}
+{% from "admin/_widgets.html" import facts, chip_ban, chip_role, drawer %}
+{% set user = detail.user %}
+{% block admin_title %}{{ user.username }}{% endblock %}
+{% block admin_eyebrow %}People · user #{{ user.id }}{% endblock %}
+{% block admin_heading %}{{ user.username }}{% endblock %}
+{% block admin_actions %}
+<a class="button small ghost" href="/users/{{ user.id }}">Public profile</a>
+<a class="button small ghost" href="/admin/levels?creator={{ user.id }}">Levels</a>
+<a class="button small ghost" href="/admin/comments/levels?author={{ user.id }}">Comments</a>
+<a class="button small ghost" href="/admin/moderation?target_type=user&target={{ user.id }}">History</a>
+{% endblock %}
+{% block admin %}
+<section class="card profile-head">
+  {% if detail.stats %}{{ icon(detail.stats, 96, None, user.username) }}{% endif %}
+  <div>
+    <div class="chips">
+      {% if user.kind != "player" %}<span class="chip kind">{{ user.kind|user_kind }}</span>{% endif %}
+      {% for role in detail.roles if role.name != "default" %}{{ chip_role(role) }}{% endfor %}
+      {% for ban in detail.bans %}{{ chip_ban(ban) }}{% endfor %}
+      {% if not detail.has_password %}<span class="chip warn">legacy password</span>{% endif %}
+    </div>
+    <p class="muted">Registered {{ when(user.registered_at) }} · last seen {{ when(user.last_seen_at) }} · {{ detail.level_count|number }} levels</p>
+  </div>
+</section>
+{% for ban in detail.bans %}
+<p class="alert warning">{{ ban.type|ban_type }} ban {% if ban.expires_at %}until {{ ban.expires_at|stamp }} UTC{% else %}with no end{% endif %}: {{ ban.reason or "no reason given" }}</p>
+{% endfor %}
+{% if detail.stats %}
+{% set stats = detail.stats %}
+<section class="stat-strip">
+  <div class="stat"><span class="value">{{ stats.stars|number }}</span><span class="label">{{ glyph("stars", "stars") }} stars</span></div>
+  <div class="stat"><span class="value">{{ stats.moons|number }}</span><span class="label">{{ glyph("moons", "moons") }} moons</span></div>
+  <div class="stat"><span class="value">{{ stats.demons|number }}</span><span class="label">{{ glyph("demons", "demons") }} demons</span></div>
+  <div class="stat"><span class="value">{{ stats.diamonds|number }}</span><span class="label">{{ glyph("diamonds", "diamonds") }} diamonds</span></div>
+  <div class="stat"><span class="value">{{ stats.secret_coins|number }}</span><span class="label">{{ glyph("secret_coins", "coins") }} secret coins</span></div>
+  <div class="stat"><span class="value">{{ stats.user_coins|number }}</span><span class="label">{{ glyph("user_coins", "coins") }} user coins</span></div>
+  <div class="stat"><span class="value">{{ stats.creator_points|number }}</span><span class="label">{{ glyph("creator_points", "cp") }} creator points</span></div>
+</section>
+{% endif %}
+<section class="split">
+  <div class="card">
+    <h3>Account</h3>
+    {{ facts([("Email", user.email), ("Kind", user.kind|user_kind), ("Messages", user.message_privacy.name|lower), ("Friend requests", user.friend_request_privacy.name|lower), ("Comment history", user.comment_history_privacy.name|lower), ("Comment colour", user.comment_colour|hex_colour if user.comment_colour is not none else "default")]) }}
+  </div>
+  <div class="card">
+    <h3>Devices</h3>
+    {% if detail.devices %}
+    <dl class="facts">
+      {% for device in detail.devices %}<dt>{{ device.platform|platform }}</dt><dd class="mono" title="{{ device.udid }}">{{ device.udid[:18] }}… <span class="muted">seen {{ device.last_seen_at|ago }}</span></dd>{% endfor %}
+    </dl>
+    {% else %}<p class="muted">No device has logged in yet.</p>{% endif %}
+  </div>
+</section>
+<section class="split four">
+  <div class="card">
+    <h3>Password</h3>
+    <p class="muted small">Signs the player out everywhere.</p>
+    <form method="post" action="/admin/users/{{ user.id }}/password">
+      {{ csrf() }}
+      <label>New password<input name="password" type="password" autocomplete="new-password" required minlength="6" maxlength="64"></label>
+      <button class="button small" type="submit">Set password</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Rename</h3>
+    <form method="post" action="/admin/users/{{ user.id }}/username">
+      {{ csrf() }}
+      <label>New username<input name="username" value="{{ user.username }}" required minlength="3" maxlength="20" pattern="[A-Za-z0-9 _\-]+"></label>
+      <button class="button small" type="submit">Rename</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Comment colour</h3>
+    <form method="post" action="/admin/users/{{ user.id }}/colour">
+      {{ csrf() }}
+      <label>Colour<input type="color" name="colour" value="{{ user.comment_colour|hex_colour }}"></label>
+      <label class="inline"><input type="checkbox" name="clear" value="true"><span>Clear the colour instead</span></label>
+      <button class="button small" type="submit">Save colour</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Kind</h3>
+    <p class="muted small">Bots never rank and stay out of curated listings.</p>
+    <form method="post" action="/admin/users/{{ user.id }}/kind">
+      {{ csrf() }}
+      <label>Kind<select name="kind">{% for option in user_kinds %}<option value="{{ option }}" {% if option == user.kind %}selected{% endif %}>{{ option|user_kind }}</option>{% endfor %}</select></label>
+      <button class="button small" type="submit">Save kind</button>
+    </form>
+  </div>
+</section>
+<section class="card">
+  <h3>Moderation</h3>
+  <form method="post" class="bulk-inline">
+    {{ csrf() }}
+    <input type="hidden" name="ids" value="{{ user.id }}">
+    <div class="bulk-actions">
+      {% call drawer("Ban") %}
+        <label class="field"><span>Type</span><select name="ban_type">{% for option in ban_types %}<option value="{{ option }}">{{ option|ban_type }}</option>{% endfor %}</select></label>
+        <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="7"></label>
+        <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+        <label class="field grow"><span>Reason</span><input name="reason" maxlength="255"></label>
+        <button class="button small danger" formaction="/admin/users/ban?next=/admin/users/{{ user.id }}">Ban</button>
+      {% endcall %}
+      {% call drawer("Lift ban") %}
+        <label class="field"><span>Type</span><select name="unban_type">{% for option in ban_types %}<option value="{{ option }}">{{ option|ban_type }}</option>{% endfor %}</select></label>
+        <button class="button small" formaction="/admin/users/unban?next=/admin/users/{{ user.id }}">Lift</button>
+      {% endcall %}
+      {% call drawer("Roles") %}
+        <label class="field"><span>Role</span><select name="role">{% for role in detail.all_roles %}<option value="{{ role.name }}">{{ role.name }} ({{ role.priority }})</option>{% endfor %}</select></label>
+        <button class="button small" formaction="/admin/users/roles/assign?next=/admin/users/{{ user.id }}">Assign</button>
+        <button class="button small ghost" formaction="/admin/users/roles/revoke?next=/admin/users/{{ user.id }}">Revoke</button>
+      {% endcall %}
+      <button class="button small ghost" formaction="/admin/users/revoke-sessions?next=/admin/users/{{ user.id }}" data-confirm="Sign {{ user.username }} out of the game and the website?">Revoke sessions</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

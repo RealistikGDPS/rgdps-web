@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import glyph, icon, pager %}
+{% from "_macros.html" import glyph, icon, pager with context %}
 {% block title %}{{ kind|leaderboard_kind }} leaderboard · {{ site_name }}{% endblock %}
 {% block content %}
 <section class="section-head">
@@ -27,5 +27,5 @@
     </tbody>
   </table>
 </div>
-{{ pager("/leaderboards/" ~ kind, board.page + 1, board.size, board.total) }}
+{{ pager(board.page + 1, board.size, board.total) }}
 {% endblock %}

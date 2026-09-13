@@ -6,14 +6,16 @@
 
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token }}">{% endmacro %}
 
-{% macro pager(base, page, size, total) %}
+{% macro pager(page, size, total) %}
 {% set last = ((total - 1) // size) + 1 if total > 0 else 1 %}
 <nav class="pager" aria-label="Pages">
-  {% if page > 1 %}<a href="{{ base }}?page={{ page - 1 }}">&larr; Previous</a>{% else %}<span></span>{% endif %}
-  <span class="muted">Page {{ page }} of {{ last }}</span>
-  {% if page < last %}<a href="{{ base }}?page={{ page + 1 }}">Next &rarr;</a>{% else %}<span></span>{% endif %}
+  {% if page > 1 %}<a href="{{ page_url(request, page - 1) }}">&larr; Previous</a>{% else %}<span></span>{% endif %}
+  <span class="muted">Page {{ page }} of {{ last }} · {{ total|number }} rows</span>
+  {% if page < last %}<a href="{{ page_url(request, page + 1) }}">Next &rarr;</a>{% else %}<span></span>{% endif %}
 </nav>
 {% endmacro %}
+
+{% macro when(moment) %}{% if moment %}<time datetime="{{ moment.isoformat() }}" title="{{ moment|stamp }} UTC">{{ moment|ago }}</time>{% else %}<span class="muted">never</span>{% endif %}{% endmacro %}
 
 {% macro level_card(level, creator) %}
 <article class="card level {{ level.difficulty|difficulty_class }}">
@@ -27,7 +29,7 @@
     {% if level.stars %}<span>{{ glyph("stars", "stars") }} {{ level.stars }}</span>{% endif %}
     <span>{{ glyph("downloads") }} {{ level.downloads|number }}</span>
     <span>{{ glyph("likes") }} {{ level.likes|number }}</span>
-    <span class="muted">{{ level.length|length }}</span>
+    <span class="muted">{{ level.length|level_length }}</span>
   </p>
   <p class="muted small">Uploaded {{ level.uploaded_at|age }} ago</p>
 </article>
