@@ -4,13 +4,19 @@ from enum import StrEnum
 from poltergeist_core.resources import BanType
 from poltergeist_core.resources import Device
 from poltergeist_core.resources import Role
+from poltergeist_core.resources import StatsHistoryEntry
 from poltergeist_core.resources import User
 from poltergeist_core.resources import UserBan
+from poltergeist_core.resources import UserLogin
 from poltergeist_core.resources import UserStats
 from poltergeist_core.services import administration
+from poltergeist_core.services import anticheat
+from poltergeist_core.services import flags
 from poltergeist_core.services import moderation
 from poltergeist_core.services import roles
 from poltergeist_core.services._common import AbstractContext
+from poltergeist_core.services.anticheat import LinkedAccount
+from poltergeist_core.services.flags import FlagError
 from poltergeist_core.services.users import UserError
 
 from web.api import forms
@@ -18,6 +24,7 @@ from web.services.admin import _common
 from web.services.admin._common import BulkOutcome
 
 _DEVICES_SHOWN = 6
+_COUNTERS = ("stars", "moons", "demons", "diamonds", "secret_coins", "user_coins")
 
 
 class Order(StrEnum):
@@ -56,6 +63,34 @@ class UserDetail:
     devices: list[Device]
     level_count: int
     all_roles: list[Role]
+    open_flags: int
+    linked: list[LinkedAccount]
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryRow:
+    """`deltas` are against the entry before this one, by counter name."""
+
+    entry: StatsHistoryEntry
+    deltas: dict[str, int]
+
+
+@dataclass(frozen=True, slots=True)
+class UserHistory:
+    user: User
+    rows: list[HistoryRow]
+    page: int
+    size: int
+    total: int
+
+
+@dataclass(frozen=True, slots=True)
+class UserLogins:
+    user: User
+    rows: list[UserLogin]
+    page: int
+    size: int
+    total: int
 
 
 async def listing(
@@ -109,6 +144,74 @@ async def detail(ctx: AbstractContext, user_id: int) -> UserError.OnSuccess[User
         devices=(await ctx.devices.list_by_user(user_id))[:_DEVICES_SHOWN],
         level_count=await ctx.levels.count_by_user(user_id),
         all_roles=await ctx.roles.list_all(),
+        open_flags=await ctx.flags.count_open_by_user(user_id),
+        linked=await anticheat.linked_accounts(ctx, user_id),
+    )
+
+
+def _deltas(
+    entry: StatsHistoryEntry, previous: StatsHistoryEntry | None
+) -> dict[str, int]:
+    if previous is None:
+        return {}
+
+    return {name: getattr(entry, name) - getattr(previous, name) for name in _COUNTERS}
+
+
+async def history(
+    ctx: AbstractContext, user_id: int, *, page: int
+) -> UserError.OnSuccess[UserHistory]:
+    user = await ctx.users.find_by_id(user_id)
+
+    if user is None:
+        return UserError.NOT_FOUND
+
+    index = forms.page_index(page)
+    entries = await ctx.stats_history.list_by_user(user_id, index, _common.PAGE_SIZE)
+    # The last row on the page diffs against the first row of the next one.
+    beyond = (
+        None
+        if not entries
+        else await ctx.stats_history.find_before(user_id, entries[-1].id)
+    )
+    previous: list[StatsHistoryEntry | None] = [*entries[1:], beyond]
+
+    return UserHistory(
+        user=user,
+        rows=[
+            HistoryRow(entry=entry, deltas=_deltas(entry, older))
+            for entry, older in zip(entries, previous, strict=True)
+        ],
+        page=index + 1,
+        size=_common.PAGE_SIZE,
+        total=await ctx.stats_history.count_by_user(user_id),
+    )
+
+
+async def logins(
+    ctx: AbstractContext, user_id: int, *, page: int
+) -> UserError.OnSuccess[UserLogins]:
+    user = await ctx.users.find_by_id(user_id)
+
+    if user is None:
+        return UserError.NOT_FOUND
+
+    index = forms.page_index(page)
+
+    return UserLogins(
+        user=user,
+        rows=await ctx.logins.list_by_user(user_id, index, _common.PAGE_SIZE),
+        page=index + 1,
+        size=_common.PAGE_SIZE,
+        total=await ctx.logins.count_by_user(user_id),
+    )
+
+
+async def restore(
+    ctx: AbstractContext, *, actor_user_id: int, user_id: int, history_id: int
+) -> FlagError.OnSuccess[None]:
+    return await flags.restore_stats(
+        ctx, actor_user_id=actor_user_id, user_id=user_id, history_id=history_id
     )
 
 

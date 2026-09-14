@@ -34,6 +34,10 @@ async def save(
     level_reupload_enabled: Annotated[bool, Form()] = False,
     download_pc_url: Annotated[str, Form()] = "",
     download_android_url: Annotated[str, Form()] = "",
+    official_stars: Annotated[int, Form()] = 0,
+    official_moons: Annotated[int, Form()] = 0,
+    official_demons: Annotated[int, Form()] = 0,
+    official_secret_coins: Annotated[int, Form()] = 0,
 ) -> Response:
     wanted = ServerSettings(
         registration_enabled=registration_enabled,
@@ -42,6 +46,10 @@ async def save(
         level_reupload_enabled=level_reupload_enabled,
         download_pc_url=download_pc_url.strip(),
         download_android_url=download_android_url.strip(),
+        official_stars=official_stars,
+        official_moons=official_moons,
+        official_demons=official_demons,
+        official_secret_coins=official_secret_coins,
     )
 
     response.unwrap(

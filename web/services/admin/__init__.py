@@ -1,5 +1,6 @@
 from . import comments
 from . import dashboard
+from . import flags
 from . import levels
 from . import moderation
 from . import packs

@@ -36,6 +36,16 @@
     <label>PC download<input name="download_pc_url" value="{{ site.download_pc_url }}" maxlength="512" placeholder="https://…"></label>
     <label>Android download<input name="download_android_url" value="{{ site.download_android_url }}" maxlength="512" placeholder="https://…"></label>
   </fieldset>
+  <fieldset class="card" {% if not editable %}disabled{% endif %}>
+    <h3>Official content</h3>
+    <p class="muted small">What the client's built-in levels award. Added to the rated content when a profile is checked against the stat ceilings; a profile above a ceiling is flagged, never refused.</p>
+    <div class="split four">
+      <label>Stars<input type="number" name="official_stars" min="0" max="100000" value="{{ site.official_stars }}"></label>
+      <label>Moons<input type="number" name="official_moons" min="0" max="100000" value="{{ site.official_moons }}"></label>
+      <label>Demons<input type="number" name="official_demons" min="0" max="100000" value="{{ site.official_demons }}"></label>
+      <label>Secret coins<input type="number" name="official_secret_coins" min="0" max="100000" value="{{ site.official_secret_coins }}"></label>
+    </div>
+  </fieldset>
   {% if editable %}<div><button class="button" type="submit">Save settings</button></div>{% endif %}
 </form>
 {% endblock %}

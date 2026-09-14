@@ -1,6 +1,6 @@
 {% extends "admin/_layout.html" %}
 {% from "_macros.html" import csrf, glyph, icon, when with context %}
-{% from "admin/_widgets.html" import facts, chip_ban, chip_role, drawer %}
+{% from "admin/_widgets.html" import facts, chip_ban, chip_role, drawer, check, select_all, bulk_bar %}
 {% set user = detail.user %}
 {% block admin_title %}{{ user.username }}{% endblock %}
 {% block admin_eyebrow %}People · user #{{ user.id }}{% endblock %}
@@ -10,6 +10,7 @@
 <a class="button small ghost" href="/admin/levels?creator={{ user.id }}">Levels</a>
 <a class="button small ghost" href="/admin/comments/levels?author={{ user.id }}">Comments</a>
 <a class="button small ghost" href="/admin/moderation?target_type=user&target={{ user.id }}">History</a>
+<a class="button small ghost" href="/admin/users/{{ user.id }}/history">Stats &amp; logins</a>
 {% endblock %}
 {% block admin %}
 <section class="card profile-head">
@@ -20,6 +21,7 @@
       {% for role in detail.roles if role.name != "default" %}{{ chip_role(role) }}{% endfor %}
       {% for ban in detail.bans %}{{ chip_ban(ban) }}{% endfor %}
       {% if not detail.has_password %}<span class="chip warn">legacy password</span>{% endif %}
+      {% if detail.open_flags %}<a class="chip flag-open" href="/admin/flags?user={{ user.id }}">{{ detail.open_flags }} open flag{{ "s" if detail.open_flags != 1 }}</a>{% endif %}
     </div>
     <p class="muted">Registered {{ when(user.registered_at) }} · last seen {{ when(user.last_seen_at) }} · {{ detail.level_count|number }} levels</p>
   </div>
@@ -52,6 +54,49 @@
     </dl>
     {% else %}<p class="muted">No device has logged in yet.</p>{% endif %}
   </div>
+</section>
+<section class="card">
+  <h3>Linked accounts</h3>
+  <p class="muted small">Other accounts seen on one of this player's devices, or from one of their addresses in the last two weeks.</p>
+  {% if detail.linked %}
+  <form method="post" data-bulk>
+    {{ csrf() }}
+    <div class="table-card">
+      <table class="board dense">
+        <thead><tr>{{ select_all() }}<th class="mono">Id</th><th>Username</th><th>Via</th><th>Bans</th><th>Last seen</th></tr></thead>
+        <tbody>
+        <tr>
+          {{ check(user.id) }}
+          <td class="mono">{{ user.id }}</td>
+          <td><strong>{{ user.username }}</strong> <span class="muted">(this account)</span></td>
+          <td class="muted">–</td>
+          <td><span class="chips">{% for ban in detail.bans %}{{ chip_ban(ban) }}{% endfor %}</span></td>
+          <td class="muted">{{ when(user.last_seen_at) }}</td>
+        </tr>
+        {% for linked in detail.linked %}
+        <tr>
+          {{ check(linked.user.id) }}
+          <td class="mono">{{ linked.user.id }}</td>
+          <td><a class="name" href="/admin/users/{{ linked.user.id }}">{{ linked.user.username }}</a></td>
+          <td>{{ "Device" if linked.via == "device" else "Address" }}</td>
+          <td><span class="chips">{% for ban in linked.bans %}{{ chip_ban(ban) }}{% endfor %}</span></td>
+          <td class="muted">{{ when(linked.user.last_seen_at) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% call bulk_bar() %}
+      {% call drawer("Ban selected") %}
+        <label class="field"><span>Type</span><select name="ban_type">{% for option in ban_types %}<option value="{{ option }}" {% if option == "leaderboard" %}selected{% endif %}>{{ option|ban_type }}</option>{% endfor %}</select></label>
+        <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="30"></label>
+        <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+        <label class="field grow"><span>Reason</span><input name="reason" maxlength="255" placeholder="Shown to the player"></label>
+        <button class="button small danger" formaction="/admin/users/ban?next=/admin/users/{{ user.id }}">Ban selected</button>
+      {% endcall %}
+    {% endcall %}
+  </form>
+  {% else %}<p class="muted">No other account shares a device or a recent address.</p>{% endif %}
 </section>
 <section class="split four">
   <div class="card">

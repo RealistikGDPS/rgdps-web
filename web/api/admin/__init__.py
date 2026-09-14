@@ -5,6 +5,7 @@ from web.api import dependencies
 
 from . import comments
 from . import dashboard
+from . import flags
 from . import levels
 from . import moderation
 from . import packs
@@ -25,6 +26,7 @@ def create_router() -> APIRouter:
     # The dashboard is the prefix itself, which a nested router cannot express.
     router.add_api_route("", dashboard.index, methods=["GET"])
     router.include_router(users.router)
+    router.include_router(flags.router)
     router.include_router(levels.router)
     router.include_router(comments.router)
     router.include_router(moderation.router)

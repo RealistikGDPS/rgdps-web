@@ -16,6 +16,8 @@ from gdformat.enums import SendFeature
 from gdformat.enums import TimelyType
 from gdformat.enums import Visibility
 from poltergeist_core.resources import BanType
+from poltergeist_core.resources import FlagKind
+from poltergeist_core.resources import FlagStatus
 from poltergeist_core.resources import LeaderboardKind
 from poltergeist_core.resources import ModTarget
 from poltergeist_core.resources import Permission
@@ -194,6 +196,8 @@ _environment.globals.update(
     visibilities=list(Visibility),
     timely_types=list(TimelyType),
     mod_targets=list(ModTarget),
+    flag_kinds=list(FlagKind),
+    flag_statuses=list(FlagStatus),
     quest_items=list(QuestItem),
     chest_types=[ChestType.SMALL, ChestType.LARGE],
     reward_items=list(_REWARD_ITEMS),
@@ -233,6 +237,10 @@ _environment.filters.update(
     send_feature=labels.send_feature,
     demon_difficulty=labels.demon_difficulty,
     platform=labels.platform,
+    flag_kind=labels.flag_kind,
+    flag_status=labels.flag_status,
+    login_source=labels.login_source,
+    stats_source=labels.stats_source,
     song_source=labels.song_source,
     gauntlet=labels.gauntlet,
 )

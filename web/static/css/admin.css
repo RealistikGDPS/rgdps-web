@@ -111,6 +111,13 @@ input[data-search] { padding-right: 2.4rem; background-image: url("data:image/sv
 .chip.ban-upload { border-color: #ff9d5c; color: #ff9d5c; }
 .chip.ban-leaderboard { border-color: var(--moons); color: var(--moons); }
 .chip.ban-creator { border-color: var(--cp); color: var(--cp); }
+.chip.flag-stats_ceiling { border-color: var(--demons); color: var(--demons); }
+.chip.flag-score_implausible { border-color: #ff9d5c; color: #ff9d5c; }
+.chip.flag-alt_account { border-color: var(--moons); color: var(--moons); }
+.chip.flag-open { border-color: var(--stars); color: var(--stars); }
+.chip.flag-dismissed, .chip.flag-actioned { border-color: var(--line); color: var(--muted); }
+.board td.delta { font-variant-numeric: tabular-nums; }
+.board .delta.up::before { content: "+"; }
 a.chip.plain:hover { text-decoration: none; border-color: var(--brand); color: var(--brand); }
 .badge.state-live { color: var(--cp); border-color: var(--cp); }
 .badge.state-queued { color: var(--brand); border-color: var(--brand); }

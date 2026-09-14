@@ -12,9 +12,13 @@ from gdformat.enums import SendFeature
 from gdformat.enums import TimelyType
 from gdformat.enums import Visibility
 from poltergeist_core.resources import BanType
+from poltergeist_core.resources import FlagKind
+from poltergeist_core.resources import FlagStatus
 from poltergeist_core.resources import LeaderboardKind
+from poltergeist_core.resources import LoginSource
 from poltergeist_core.resources import ModTarget
 from poltergeist_core.resources import SongSource
+from poltergeist_core.resources import StatsSource
 from poltergeist_core.resources import UserKind
 
 from web.icons import IconKind
@@ -138,6 +142,23 @@ _MOD_TARGET = {
     ModTarget.SECRET_REWARD: "Vault code",
     ModTarget.ROLE: "Role",
     ModTarget.SERVER: "Server",
+    ModTarget.FLAG: "Flag",
+}
+_FLAG_KIND = {
+    FlagKind.STATS_CEILING: "Stats over ceiling",
+    FlagKind.SCORE_IMPLAUSIBLE: "Implausible score",
+    FlagKind.ALT_ACCOUNT: "Linked account",
+}
+_FLAG_STATUS = {
+    FlagStatus.OPEN: "Open",
+    FlagStatus.DISMISSED: "Dismissed",
+    FlagStatus.ACTIONED: "Actioned",
+}
+_LOGIN_SOURCE = {LoginSource.GAME: "Game", LoginSource.WEB: "Website"}
+_STATS_SOURCE = {
+    StatsSource.BASELINE: "Baseline",
+    StatsSource.CLIENT: "Client",
+    StatsSource.RESTORE: "Restored",
 }
 _QUEST_ITEM = {
     QuestItem.ORBS: "Orbs",
@@ -308,6 +329,22 @@ def demon_difficulty(value: DemonDifficulty) -> str:
 
 def platform(value: Platform) -> str:
     return _PLATFORM[value]
+
+
+def flag_kind(value: FlagKind) -> str:
+    return _FLAG_KIND[value]
+
+
+def flag_status(value: FlagStatus) -> str:
+    return _FLAG_STATUS[value]
+
+
+def login_source(value: LoginSource) -> str:
+    return _LOGIN_SOURCE[value]
+
+
+def stats_source(value: StatsSource) -> str:
+    return _STATS_SOURCE[value]
 
 
 def song_source(value: SongSource) -> str:

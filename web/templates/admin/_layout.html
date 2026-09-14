@@ -16,6 +16,7 @@
       <a href="/admin/users" class="{% if here.startswith('/admin/users') %}active{% endif %}" data-key="u"><span>Users</span><kbd>u</kbd></a>
       <a href="/admin/comments" class="{% if here.startswith('/admin/comments') %}active{% endif %}" data-key="c"><span>Comments</span><kbd>c</kbd></a>
       <a href="/admin/moderation" class="{% if here.startswith('/admin/moderation') %}active{% endif %}" data-key="m"><span>Moderation</span><kbd>m</kbd></a>
+      {% if viewer.may(permission.FLAGS_REVIEW) %}<a href="/admin/flags" class="{% if here.startswith('/admin/flags') %}active{% endif %}" data-key="f"><span>Flags</span><kbd>f</kbd></a>{% endif %}
       <span class="rail-group">Content</span>
       <a href="/admin/levels" class="{% if here.startswith('/admin/levels') %}active{% endif %}" data-key="l"><span>Levels</span><kbd>l</kbd></a>
       <a href="/admin/timely" class="{% if here.startswith('/admin/timely') %}active{% endif %}" data-key="t"><span>Timely</span><kbd>t</kbd></a>

@@ -1,0 +1,34 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import pager, when with context %}
+{% from "admin/_widgets.html" import empty %}
+{% set user = listing.user %}
+{% block admin_title %}{{ user.username }} · logins{% endblock %}
+{% block admin_eyebrow %}People · user #{{ user.id }}{% endblock %}
+{% block admin_heading %}{{ user.username }}{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="History"><a href="/admin/users/{{ user.id }}">Profile</a><a href="/admin/users/{{ user.id }}/history">Stats history</a><a class="active" href="/admin/users/{{ user.id }}/logins">Logins</a></nav>
+{% endblock %}
+{% block admin %}
+<p class="muted small">Game logins, fresh credential checks (once per cached session) and website sign-ins.</p>
+<div class="card table-card">
+  <table class="board dense">
+    <thead><tr><th>When</th><th>Source</th><th>Address</th><th>Platform</th><th>Device</th><th class="num">Game</th><th class="num">Binary</th></tr></thead>
+    <tbody>
+    {% for login in listing.rows %}
+    <tr>
+      <td class="muted">{{ when(login.created_at) }}</td>
+      <td>{{ login.source|login_source }}</td>
+      <td class="mono">{{ login.ip }}</td>
+      <td>{{ login.platform|platform }}</td>
+      <td class="mono" title="{{ login.udid }}">{% if login.udid %}{{ login.udid[:18] }}…{% else %}–{% endif %}</td>
+      <td class="num">{{ login.game_version or "–" }}</td>
+      <td class="num">{{ login.binary_version or "–" }}</td>
+    </tr>
+    {% else %}
+    {{ empty("No login has been recorded yet.", 7) }}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% endblock %}

@@ -54,6 +54,62 @@ async def detail(
     return response.render(request, "admin/user.html", viewer=operator, detail=detail)
 
 
+@router.get("/{user_id}/history")
+async def history(
+    request: Request,
+    user_id: int,
+    ctx: RequiresContext,
+    operator: RequiresOperator,
+    page: int = 1,
+) -> Response:
+    listing = response.unwrap(
+        request, await users.history(ctx, user_id, page=page), viewer=operator
+    )
+
+    return response.render(
+        request, "admin/user_history.html", viewer=operator, listing=listing
+    )
+
+
+@router.get("/{user_id}/logins")
+async def logins(
+    request: Request,
+    user_id: int,
+    ctx: RequiresContext,
+    operator: RequiresOperator,
+    page: int = 1,
+) -> Response:
+    listing = response.unwrap(
+        request, await users.logins(ctx, user_id, page=page), viewer=operator
+    )
+
+    return response.render(
+        request, "admin/user_logins.html", viewer=operator, listing=listing
+    )
+
+
+@router.post("/{user_id}/restore")
+async def restore(
+    request: Request,
+    user_id: int,
+    ctx: RequiresTransaction,
+    operator: RequiresOperator,
+    _: RequiresCsrf,
+    history_id: Annotated[int, Form()],
+) -> Response:
+    response.unwrap(
+        request,
+        await users.restore(
+            ctx, actor_user_id=operator.id, user_id=user_id, history_id=history_id
+        ),
+        viewer=operator,
+    )
+
+    return response.notice(
+        f"{_INDEX}/{user_id}/history", "Stats restored and the rankings updated."
+    )
+
+
 @router.post("/ban")
 async def ban(
     request: Request,

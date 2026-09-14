@@ -1,0 +1,70 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager, when with context %}
+{% from "admin/_widgets.html" import toolbar, field, check, select_all, bulk_bar, drawer, empty, user_link, level_link %}
+{% block admin_title %}Flags{% endblock %}
+{% block admin_eyebrow %}People · {{ listing.total|number }} flags{% endblock %}
+{% block admin_heading %}Flags{% endblock %}
+{% block admin %}
+{% set reviewer = viewer.may(permission.FLAGS_REVIEW) %}
+{% call toolbar() %}
+  {% call field("Status") %}<select name="status" data-autosubmit><option value="">Any</option>{% for option in flag_statuses %}<option value="{{ option }}" {% if option == listing.status %}selected{% endif %}>{{ option|flag_status }}</option>{% endfor %}</select>{% endcall %}
+  {% call field("Kind") %}<select name="kind" data-autosubmit><option value="">Any</option>{% for option in flag_kinds %}<option value="{{ option }}" {% if option == listing.kind %}selected{% endif %}>{{ option|flag_kind }}</option>{% endfor %}</select>{% endcall %}
+  {% call field("User id") %}<input name="user" value="{{ listing.user }}" inputmode="numeric" size="8" data-search>{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  <div class="card table-card">
+    <table class="board dense">
+      <thead><tr>{{ select_all() }}<th class="mono">Id</th><th class="sticky">Player</th><th>Kind</th><th class="wide">Evidence</th><th>Status</th><th>Raised</th></tr></thead>
+      <tbody>
+      {% for row in listing.rows %}
+      {% set flag = row.flag %}
+      {% set evidence = flag.evidence or {} %}
+      <tr>
+        {{ check(flag.id) }}
+        <td class="mono">{{ flag.id }}</td>
+        <td class="sticky">{{ user_link(row.user, flag.user_id) }}{% if row.open_count > 1 %} <span class="chip flag-open" title="open flags on this account">{{ row.open_count }}</span>{% endif %}</td>
+        <td><span class="chip flag-{{ flag.kind }}">{{ flag.kind|flag_kind }}</span></td>
+        <td class="wide">
+          {% if flag.kind == "stats_ceiling" %}
+            {% for name, detail in evidence.get("exceeded", {}).items() %}<span class="chip plain">{{ name.replace("_", " ") }} {{ detail.value|number }} / {{ detail.ceiling|number }}</span> {% endfor %}
+            {% if evidence.get("previous_history_id") %}<span class="muted small">restores to snapshot #{{ evidence.previous_history_id }}</span>{% endif %}
+          {% elif flag.kind == "score_implausible" %}
+            {{ evidence.get("percent", 0) }}% on {{ level_link(row.level, flag.target_id) }} in {{ evidence.get("seconds", 0)|number }}s
+            (minimum {{ evidence.get("minimum_seconds", 0) }}s), {{ evidence.get("clicks", 0)|number }} clicks, {{ evidence.get("attempts", 0)|number }} attempts
+            {% for reason in evidence.get("reasons", []) %}<span class="chip plain">{{ reason.replace("_", " ") }}</span>{% endfor %}
+          {% elif flag.kind == "alt_account" %}
+            {% set new_ids = evidence.get("new", []) %}
+            {% set banned_ids = evidence.get("banned", []) %}
+            {% for entry in evidence.get("linked", []) %}
+              {% set linked_user = row.users.get(entry.user_id) %}
+              <span class="chip {% if entry.user_id in new_ids %}flag-open{% else %}plain{% endif %}" title="{{ 'shares a device' if entry.via == 'device' else 'shares an address' }}">{{ user_link(linked_user, entry.user_id) }} · {{ entry.via }}{% if entry.user_id in banned_ids %} · banned{% endif %}</span>
+            {% endfor %}
+          {% else %}
+            <code class="log-details">{{ evidence|tojson }}</code>
+          {% endif %}
+        </td>
+        <td><span class="chip flag-{{ flag.status }}" {% if flag.resolved_at %}title="{{ flag.resolved_at|stamp }} UTC by #{{ flag.resolved_by_user_id }}"{% endif %}>{{ flag.status|flag_status }}</span></td>
+        <td class="muted">{{ when(flag.created_at) }}</td>
+      </tr>
+      {% else %}
+      {{ empty("No flags match.", 7) }}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if reviewer %}
+  {% call bulk_bar() %}
+    <button class="button small" formaction="/admin/flags/dismiss{{ back_query(request) }}">Dismiss</button>
+    {% call drawer("Leaderboard ban") %}
+      <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="30"></label>
+      <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+      <label class="field grow"><span>Reason</span><input name="reason" maxlength="255" placeholder="Shown to the player"></label>
+      <button class="button small danger" formaction="/admin/flags/ban{{ back_query(request) }}">Ban and close</button>
+    {% endcall %}
+    {% if viewer.may(permission.STATS_RESTORE) %}<button class="button small ghost" formaction="/admin/flags/restore{{ back_query(request) }}" data-confirm="Put the selected players' stats back to the snapshot before the flagged update?">Restore stats</button>{% endif %}
+  {% endcall %}
+  {% endif %}
+</form>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% endblock %}

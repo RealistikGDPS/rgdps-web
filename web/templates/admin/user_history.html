@@ -1,0 +1,49 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager, when with context %}
+{% from "admin/_widgets.html" import empty %}
+{% set user = listing.user %}
+{% block admin_title %}{{ user.username }} · stats history{% endblock %}
+{% block admin_eyebrow %}People · user #{{ user.id }}{% endblock %}
+{% block admin_heading %}{{ user.username }}{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="History"><a href="/admin/users/{{ user.id }}">Profile</a><a class="active" href="/admin/users/{{ user.id }}/history">Stats history</a><a href="/admin/users/{{ user.id }}/logins">Logins</a></nav>
+{% endblock %}
+{% block admin %}
+{% set restorer = viewer.may(permission.STATS_RESTORE) %}
+{% macro delta(value) %}{% if value %}<span class="delta {{ 'up' if value > 0 else 'down' }}">{{ value|number }}</span>{% endif %}{% endmacro %}
+<p class="muted small">One row per update that changed a counter. The baseline is what the account held before the first recorded update; a restore puts the counters back to the chosen row and the rankings follow.</p>
+<div class="card table-card">
+  <table class="board dense">
+    <thead><tr><th class="mono">Id</th><th>When</th><th>Source</th><th class="num">Stars</th><th class="num">Moons</th><th class="num">Demons</th><th class="num">Diamonds</th><th class="num">Secret coins</th><th class="num">User coins</th><th class="num">Demon tiers</th>{% if restorer %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for row in listing.rows %}
+    {% set entry = row.entry %}
+    <tr>
+      <td class="mono">{{ entry.id }}</td>
+      <td class="muted">{{ when(entry.created_at) }}</td>
+      <td>{{ entry.source|stats_source }}</td>
+      <td class="num delta">{{ entry.stars|number }} {{ delta(row.deltas.get("stars")) }}</td>
+      <td class="num delta">{{ entry.moons|number }} {{ delta(row.deltas.get("moons")) }}</td>
+      <td class="num delta">{{ entry.demons|number }} {{ delta(row.deltas.get("demons")) }}</td>
+      <td class="num delta">{{ entry.diamonds|number }} {{ delta(row.deltas.get("diamonds")) }}</td>
+      <td class="num delta">{{ entry.secret_coins|number }} {{ delta(row.deltas.get("secret_coins")) }}</td>
+      <td class="num delta">{{ entry.user_coins|number }} {{ delta(row.deltas.get("user_coins")) }}</td>
+      <td class="num mono" title="easy / medium / hard / insane / extreme, then platformer, then weekly / gauntlet / event">{{ entry.demons_easy }}/{{ entry.demons_medium }}/{{ entry.demons_hard }}/{{ entry.demons_insane }}/{{ entry.demons_extreme }} · {{ entry.demons_easy_platformer }}/{{ entry.demons_medium_platformer }}/{{ entry.demons_hard_platformer }}/{{ entry.demons_insane_platformer }}/{{ entry.demons_extreme_platformer }} · {{ entry.demons_weekly }}/{{ entry.demons_gauntlet }}/{{ entry.demons_event }}</td>
+      {% if restorer %}
+      <td>
+        <form method="post" action="/admin/users/{{ user.id }}/restore">
+          {{ csrf() }}
+          <input type="hidden" name="history_id" value="{{ entry.id }}">
+          <button class="button small ghost" type="submit" data-confirm="Put {{ user.username }}'s counters back to snapshot #{{ entry.id }}?">Restore</button>
+        </form>
+      </td>
+      {% endif %}
+    </tr>
+    {% else %}
+    {{ empty("No stats update has been recorded yet.", 11 if restorer else 10) }}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% endblock %}
