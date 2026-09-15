@@ -180,13 +180,17 @@ async def boomlings(ctx: AbstractContext) -> Tile:
     answer = await ctx.boomlings.fetch_song(_BOOMLINGS_PROBE_SONG)
     latency = round((time.perf_counter() - started) * 1000, 1)
     reachable = answer is not BoomlingsError.UNAVAILABLE
+    facts = [("URL", core_settings.BOOMLINGS_URL)]
+
+    if core_settings.BOOMLINGS_PROXY_URL:
+        facts.append(("Proxy", core_settings.BOOMLINGS_PROXY_URL))
 
     return Tile(
         "boomlings",
         "Boomlings",
         State.UP if reachable else State.DOWN,
         latency,
-        [("URL", core_settings.BOOMLINGS_URL)],
+        facts,
     )
 
 
