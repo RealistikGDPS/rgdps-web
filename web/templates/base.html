@@ -64,6 +64,7 @@
 <footer class="footer">
   <span>{{ site_name }}</span>
   <span>Not affiliated with RobTop Games.</span>
+  {% if site.discord_url %}<a href="{{ site.discord_url }}" rel="noopener">Discord</a>{% endif %}
   <a href="https://github.com/RealistikGDPS">GitHub</a>
 </footer>
 <script src="/static/js/site.js?v={{ static_version }}" defer></script>

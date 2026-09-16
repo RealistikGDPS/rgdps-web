@@ -42,6 +42,11 @@
     <label>Android download<input name="download_android_url" value="{{ site.download_android_url }}" maxlength="512" placeholder="https://…"></label>
   </fieldset>
   <fieldset class="card" {% if not editable %}disabled{% endif %}>
+    <h3>Community</h3>
+    <p class="muted small">An HTTPS invite link shown on the home page and in the footer. Empty hides it.</p>
+    <label>Discord invite<input name="discord_url" value="{{ site.discord_url }}" maxlength="512" placeholder="https://discord.gg/…"></label>
+  </fieldset>
+  <fieldset class="card" {% if not editable %}disabled{% endif %}>
     <h3>Official content</h3>
     <p class="muted small">What the client's built-in levels award. Added to the rated content when a profile is checked against the stat ceilings; a profile above a ceiling is flagged, never refused.</p>
     <div class="split four">

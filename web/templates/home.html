@@ -9,6 +9,7 @@
   <p class="actions">
     <a class="button" href="/downloads">Download</a>
     {% if viewer %}<a class="button ghost" href="/users/{{ viewer.id }}">Your profile</a>{% elif site.registration_enabled %}<a class="button ghost" href="/register">Create an account</a>{% else %}<a class="button ghost" href="/login">Log in</a>{% endif %}
+    {% if site.discord_url %}<a class="button ghost" href="{{ site.discord_url }}" rel="noopener">Join the Discord</a>{% endif %}
   </p>
 </section>
 

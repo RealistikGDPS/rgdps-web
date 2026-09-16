@@ -1,7 +1,7 @@
 from poltergeist_core.resources import ServerSettings
 from poltergeist_core.services import ServiceError
-from poltergeist_core.services.reuploads import reupload_level as reupload_in_core
 from poltergeist_core.services._common import AbstractContext
+from poltergeist_core.services.reuploads import reupload_level as reupload_in_core
 
 from web.adapters.turnstile import ImplementsCaptcha
 from web.errors import WebError
@@ -30,4 +30,6 @@ async def reupload_level(
     if not await captcha.verify(captcha_token, ip=ip):
         return WebError.CAPTCHA_FAILED
 
-    return await reupload_in_core(ctx, actor_user_id=actor_user_id, official_id=level_id)
+    return await reupload_in_core(
+        ctx, actor_user_id=actor_user_id, official_id=level_id
+    )
