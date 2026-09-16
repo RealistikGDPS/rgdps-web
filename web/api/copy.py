@@ -5,6 +5,7 @@ from poltergeist_core.services.comments import CommentError
 from poltergeist_core.services.levels import LevelError
 from poltergeist_core.services.moderation import ModerationError
 from poltergeist_core.services.packs import PackError
+from poltergeist_core.services.reuploads import ReuploadError
 from poltergeist_core.services.roles import RoleError
 from poltergeist_core.services.server_settings import ServerSettingsError
 from poltergeist_core.services.songs import SongError
@@ -58,6 +59,7 @@ def explain(error: ServiceError) -> str:
             | TimelyError.NOT_PERMITTED
             | PackError.NOT_PERMITTED
             | LevelError.NOT_PERMITTED
+            | ReuploadError.NOT_PERMITTED
             | CommentError.NOT_PERMITTED
             | SongError.NOT_ALLOWED
             | ServerSettingsError.NOT_PERMITTED
@@ -91,7 +93,37 @@ def explain(error: ServiceError) -> str:
         case PackError.INVALID:
             return "Every level id must exist, and a gauntlet needs exactly five."
         case ServerSettingsError.INVALID:
-            return "Download links must be HTTPS or a path on this site."
+            return (
+                "Those settings were not accepted: download links must be HTTPS "
+                "or a path on this site, the reupload bot must be an existing "
+                "user, and the daily reupload limit at least 1."
+            )
+        case ReuploadError.DISABLED:
+            return "Level reuploads are switched off at the moment."
+        case ReuploadError.BOT_UNAVAILABLE:
+            return "The reupload bot account is not set up yet."
+        case ReuploadError.BANNED:
+            return "This account cannot upload levels."
+        case ReuploadError.INVALID_ID:
+            return "Enter a level id from the official servers."
+        case ReuploadError.ALREADY_REUPLOADED:
+            return "That level is already on this server."
+        case ReuploadError.IN_PROGRESS:
+            return "That level is being reuploaded right now. Try again in a minute."
+        case ReuploadError.RATE_LIMITED:
+            return "You have used today's reuploads. Try again tomorrow."
+        case ReuploadError.BUSY:
+            return "The reupload tool is busy. Try again in a minute."
+        case ReuploadError.UPSTREAM_NOT_FOUND:
+            return "The official servers have no level with that id."
+        case ReuploadError.UPSTREAM_UNAVAILABLE:
+            return "The official servers are not answering. Try again in a minute."
+        case ReuploadError.UPSTREAM_MALFORMED:
+            return "The official servers sent something this server could not read."
+        case ReuploadError.TOO_LARGE:
+            return "That level is too large for this server."
+        case ReuploadError.INVALID:
+            return "That level could not be read."
         case (
             AdministrationError.INVALID
             | ModerationError.INVALID

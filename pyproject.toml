@@ -9,7 +9,7 @@ authors = [{ name = "RealistikDash" }]
 requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.141.1",
-    "gdformat>=0.2.1",
+    "gdformat>=0.2.2",
     "httpx>=0.28.1",
     "jinja2>=3.1.6",
     "pillow>=12.0.0",

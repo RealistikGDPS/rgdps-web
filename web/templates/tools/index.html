@@ -13,7 +13,7 @@
   <a class="card tool" href="/tools/{{ card.tool }}">
     <h2>{{ card.title }}</h2>
     <p class="muted">{{ card.blurb }}</p>
-    <span class="tag">Coming soon</span>
+    {% if not card.ready %}<span class="tag">Coming soon</span>{% endif %}
   </a>
   {% else %}
   <article class="card tool disabled">

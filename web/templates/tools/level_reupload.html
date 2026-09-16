@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, error_box with context %}
+{% block title %}Level reupload · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="form-card card">
+  <p class="eyebrow">Tools</p>
+  <h1>Level reupload</h1>
+  <p class="muted">Enter the id of a level on the official servers. It is copied here and published by the reupload bot with its official difficulty and stars.</p>
+  {% if error is defined %}{{ error_box(error) }}{% endif %}
+  <form method="post" action="/tools/level-reupload">
+    {{ csrf() }}
+    <label>Official level id<input name="level_id" type="number" inputmode="numeric" min="1" max="2147483647" value="{{ level_id }}" required></label>
+    {% if turnstile_site_key %}
+    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {% endif %}
+    <button class="button wide" type="submit">Reupload level</button>
+  </form>
+  <p class="muted small">Up to {{ site.level_reupload_daily_limit }} reuploads per day. Every attempt counts, including one the official servers refuse. A level that is already here is never fetched again.</p>
+  <p><a class="button ghost" href="/tools">All tools</a></p>
+</section>
+{% endblock %}

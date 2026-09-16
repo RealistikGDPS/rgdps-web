@@ -2,8 +2,10 @@
 
 The public site of [RealistikGDPS](https://rgdps.ussr.pl): downloads,
 leaderboards, server statistics, player profiles with rendered icons, account
-management (registration, login, password and username changes) and, under
-`/admin`, the control room for operators.
+management (registration, login, password and username changes), the level
+reupload tool (an official level copied under the bot account behind a
+Turnstile challenge and a per-player daily allowance) and, under `/admin`,
+the control room for operators.
 
 It is a FastAPI application rendering Jinja2 templates, built on
 [poltergeist-core](https://github.com/RealistikGDPS/poltergeist-core) for

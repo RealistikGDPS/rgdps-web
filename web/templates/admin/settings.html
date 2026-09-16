@@ -29,6 +29,11 @@
       <span><strong>Level reupload</strong><small>The website tool that copies a level from the official servers.</small></span>
       <span class="switch"><input type="checkbox" name="level_reupload_enabled" value="true" {% if site.level_reupload_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
     </label>
+    <p class="muted small">Reuploaded levels are published under the bot account; give it the bot kind so they stay out of the curated tabs. Every attempt a player makes counts against their daily allowance.</p>
+    <div class="split">
+      <label>Reupload bot user id<input type="number" name="reupload_bot_user_id" min="0" value="{{ site.reupload_bot_user_id }}"></label>
+      <label>Reuploads per player per day<input type="number" name="level_reupload_daily_limit" min="1" max="1000" value="{{ site.level_reupload_daily_limit }}"></label>
+    </div>
   </fieldset>
   <fieldset class="card" {% if not editable %}disabled{% endif %}>
     <h3>Downloads</h3>
