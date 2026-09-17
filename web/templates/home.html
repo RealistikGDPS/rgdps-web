@@ -5,11 +5,17 @@
 <section class="hero">
   <p class="eyebrow">Geometry Dash 2.2 private server</p>
   <h1>Realistik<span class="accent">GDPS</span></h1>
-  <p class="lead">Your levels, your leaderboards, your scene. A from-scratch server built for speed and fairness, playable on PC and Android.</p>
+  <p class="lead">Your levels, your leaderboards, your scene. A from-scratch server built for speed and fairness, playable on PC, Android and iOS.</p>
   <p class="actions">
     <a class="button" href="/downloads">Download</a>
     {% if viewer %}<a class="button ghost" href="/users/{{ viewer.id }}">Your profile</a>{% elif site.registration_enabled %}<a class="button ghost" href="/register">Create an account</a>{% else %}<a class="button ghost" href="/login">Log in</a>{% endif %}
     {% if site.discord_url %}<a class="button ghost" href="{{ site.discord_url }}" rel="noopener">Join the Discord</a>{% endif %}
+  </p>
+  <p class="platforms">
+    <span class="muted small">Available on</span>
+    {% for name, url in (("PC", site.download_pc_url), ("Android", site.download_android_url), ("iOS", site.download_ios_url)) %}
+    <a class="tag {{ 'on' if url else 'off' }}" href="/downloads"{% if not url %} title="Not available yet"{% endif %}>{{ name }}</a>
+    {% endfor %}
   </p>
 </section>
 

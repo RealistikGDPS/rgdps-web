@@ -18,6 +18,11 @@
     <p>Installs as its own app next to the official one. Allow installs from unknown sources when asked.</p>
     {% if site.download_android_url %}<a class="button" href="{{ site.download_android_url }}">Download for Android</a>{% else %}<span class="tag off">Not available yet</span>{% endif %}
   </article>
+  <article class="card download">
+    <h2>iOS</h2>
+    <p>An IPA that installs as its own app next to the official one. Sideload it with AltStore, Sideloadly or TrollStore.</p>
+    {% if site.download_ios_url %}<a class="button" href="{{ site.download_ios_url }}">Download for iOS</a>{% else %}<span class="tag off">Not available yet</span>{% endif %}
+  </article>
 </section>
 <section class="card">
   <h3>First launch</h3>
