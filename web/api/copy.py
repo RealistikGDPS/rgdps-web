@@ -2,6 +2,7 @@ from poltergeist_core.services import ServiceError
 from poltergeist_core.services.administration import AdministrationError
 from poltergeist_core.services.auth import AuthError
 from poltergeist_core.services.comments import CommentError
+from poltergeist_core.services.demon_list import DemonListError
 from poltergeist_core.services.levels import LevelError
 from poltergeist_core.services.moderation import ModerationError
 from poltergeist_core.services.packs import PackError
@@ -16,8 +17,52 @@ from web.errors import WebError
 from web.icons import IconError
 
 
+def _explain_demon_list(error: DemonListError) -> str:
+    match error:
+        case DemonListError.NOT_PERMITTED:
+            return "You are not allowed to do that."
+        case DemonListError.LEVEL_NOT_FOUND:
+            return "That level does not exist."
+        case DemonListError.NOT_FOUND:
+            return "That level is not on the demon list."
+        case DemonListError.USER_NOT_FOUND:
+            return "That player does not exist."
+        case DemonListError.ALREADY_LISTED:
+            return "That level is already on the list."
+        case DemonListError.INVALID_POSITION:
+            return "Positions run from 1 to one past the bottom of the list."
+        case DemonListError.INVALID_REQUIREMENT:
+            return "The requirement is a percent from 1 to 100."
+        case DemonListError.INVALID_PERCENT:
+            return "The percent runs from 1 to 100."
+        case DemonListError.BELOW_REQUIREMENT:
+            return "That percent is below this level's list requirement."
+        case DemonListError.INVALID_URL:
+            return "Links must start with https:// and be at most 255 characters."
+        case DemonListError.INVALID_NOTES:
+            return "The notes are too long."
+        case DemonListError.SUBMISSIONS_CLOSED:
+            return "Record submissions are closed at the moment."
+        case DemonListError.BANNED:
+            return "This account cannot submit demon list records."
+        case DemonListError.ALREADY_PENDING:
+            return "You already have a record on this level waiting for review."
+        case DemonListError.NOT_IMPROVED:
+            return "Your approved record on this level is already that good."
+        case DemonListError.ALREADY_REVIEWED:
+            return "That record has already been reviewed."
+        case DemonListError.RATE_LIMITED:
+            return "You have used today's record submissions. Try again tomorrow."
+
+
 def explain(error: ServiceError) -> str:
     """What a person reads when a request is refused."""
+
+    # NOTE: Members of different error enums with the same value compare
+    # equal, so an enum whose values overlap the others is told apart by
+    # class before the value match below.
+    if isinstance(error, DemonListError):
+        return _explain_demon_list(error)
 
     match error:
         case AuthError.INVALID_CREDENTIALS:
@@ -96,7 +141,8 @@ def explain(error: ServiceError) -> str:
             return (
                 "Those settings were not accepted: download links must be HTTPS "
                 "or a path on this site, the reupload bot must be an existing "
-                "user, and the daily reupload limit at least 1."
+                "user, the daily reupload and demon list allowances at least 1, "
+                "the top list points at least 1 and the decay between 1 and 100."
             )
         case ReuploadError.DISABLED:
             return "Level reuploads are switched off at the moment."

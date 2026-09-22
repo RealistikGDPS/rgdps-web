@@ -1,0 +1,39 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, pager with context %}
+{% from "admin/_widgets.html" import toolbar, field %}
+{% from "admin/_demonlist.html" import record_table, record_actions with context %}
+{% set reviewer = viewer.may(permission.DEMON_LIST_REVIEW) %}
+{% block admin_title %}List records{% endblock %}
+{% block admin_eyebrow %}Content · {{ listing.total|number }} records{% endblock %}
+{% block admin_heading %}Demon list records{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Demon list"><a href="/admin/demonlist">Placements</a><a class="active" href="/admin/demonlist/records">Records</a></nav>
+{% endblock %}
+{% block admin %}
+{% if not reviewer %}<p class="alert">Read only: your roles lack <code>demon_list.review</code>.</p>{% endif %}
+{% call toolbar() %}
+  {% call field("Status") %}<select name="status" data-autosubmit><option value="">Any</option>{% for option in record_statuses %}<option value="{{ option }}" {% if option == listing.status %}selected{% endif %}>{{ option|record_status }}</option>{% endfor %}</select>{% endcall %}
+  {% call field("Level id") %}<input name="level" value="{{ listing.level }}" inputmode="numeric" size="8" data-search>{% endcall %}
+  {% call field("User id") %}<input name="user" value="{{ listing.user }}" inputmode="numeric" size="8">{% endcall %}
+{% endcall %}
+<form method="post" data-bulk>
+  {{ csrf() }}
+  {{ record_table(listing.rows, reviewer) }}
+  {% if reviewer %}{{ record_actions() }}{% endif %}
+</form>
+{{ pager(listing.page, listing.size, listing.total) }}
+{% if reviewer %}
+<form method="post" action="/admin/demonlist/records/add{{ back_query(request) }}" class="card">
+  {{ csrf() }}
+  <h3>Add a record</h3>
+  <p class="muted small">Entered on a player's behalf and approved at once; it replaces their current record on that level.</p>
+  <div class="split four">
+    <label>Placement id<input type="number" name="placement_id" min="1" inputmode="numeric" required></label>
+    <label>User id<input type="number" name="user_id" min="1" inputmode="numeric" required></label>
+    <label>Percent<input type="number" name="percent" min="1" max="100" value="100"></label>
+    <label>Video<input type="url" name="video_url" maxlength="255" placeholder="https://"></label>
+  </div>
+  <div><button class="button" type="submit">Add record</button></div>
+</form>
+{% endif %}
+{% endblock %}

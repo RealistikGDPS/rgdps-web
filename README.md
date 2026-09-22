@@ -4,8 +4,10 @@ The public site of [RealistikGDPS](https://rgdps.ussr.pl): downloads,
 leaderboards, server statistics, player profiles with rendered icons, account
 management (registration, login, password and username changes), the level
 reupload tool (an official level copied under the bot account behind a
-Turnstile challenge and a per-player daily allowance) and, under `/admin`,
-the control room for operators.
+Turnstile challenge and a per-player daily allowance), the demon list (a
+hand-ordered list of the hardest levels at `/demonlist`, with player-submitted
+records that moderators approve and website-only list points that decay by
+position) and, under `/admin`, the control room for operators.
 
 It is a FastAPI application rendering Jinja2 templates, built on
 [poltergeist-core](https://github.com/RealistikGDPS/poltergeist-core) for
@@ -33,9 +35,11 @@ signs every action as the signed-in account, so the server's own permission
 checks apply and each change lands in the moderation log. It covers the
 dashboard, users, levels and their rating and report queues, comments,
 the moderation log and bans, daily, weekly and event queues, songs, quests
-and vault codes, map packs and gauntlets, roles, live server settings
-(registration, level uploads, tool switches, download links; needs
-`admin.settings`) and a stack status page that probes MySQL, Redis, object
+and vault codes, map packs and gauntlets, the demon list (ordering needs
+`demon_list.manage`, reviewing records `demon_list.review`; the seeded
+`list_moderator` role holds both), roles, live server settings
+(registration, level uploads, tool switches, download links, list points;
+needs `admin.settings`) and a stack status page that probes MySQL, Redis, object
 storage and the game server, refreshing itself every
 `WEB_STATUS_POLL_SECONDS`. Rebuilding the leaderboards needs
 `admin.maintenance`. The first administrator is granted by hand:

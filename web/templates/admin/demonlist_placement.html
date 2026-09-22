@@ -1,0 +1,77 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, glyph, when with context %}
+{% from "admin/_widgets.html" import facts, user_link, level_link %}
+{% from "admin/_demonlist.html" import record_table, record_actions with context %}
+{% set row = page.row %}
+{% set placement = row.placement %}
+{% set manager = viewer.may(permission.DEMON_LIST_MANAGE) %}
+{% set reviewer = viewer.may(permission.DEMON_LIST_REVIEW) %}
+{% set self_url = "/admin/demonlist/" ~ placement.id %}
+{% block admin_title %}#{{ placement.position }} {% if row.level %}{{ row.level.name }}{% else %}placement{% endif %}{% endblock %}
+{% block admin_eyebrow %}Content · demon list placement #{{ placement.id }}{% endblock %}
+{% block admin_heading %}#{{ placement.position }} {% if row.level %}{{ row.level.name }}{% else %}<span class="muted">deleted level</span>{% endif %}{% endblock %}
+{% block admin_actions %}
+<a class="button small ghost" href="/admin/demonlist">All placements</a>
+{% if row.level %}<a class="button small ghost" href="/demonlist/{{ row.level.id }}" target="_blank" rel="noopener">Public page</a>{% endif %}
+<a class="button small ghost" href="/admin/moderation?target_type=demon_list_placement&amp;target={{ placement.id }}">History</a>
+{% endblock %}
+{% block admin %}
+<section class="split align-start">
+  <div class="card">
+    <h3>Facts</h3>
+    {{ facts([
+      ("Level", level_link(row.level, placement.level_id)),
+      ("Creator", user_link(row.creator, row.level.user_id) if row.level else "–"),
+      ("Difficulty", row.level.difficulty|difficulty if row.level else "–"),
+      ("Points for 100%", row.points|number),
+      ("Requirement", placement.requirement ~ "%"),
+      ("Approved records", row.approved|number),
+      ("Pending records", row.pending|number),
+      ("Placed", (placement.created_at|stamp ~ " UTC by ") ~ (row.added_by.username if row.added_by else "#" ~ placement.added_by_user_id)),
+      ("Last change", placement.updated_at|stamp ~ " UTC"),
+    ]) }}
+  </div>
+  {% if manager %}
+  <div class="stack">
+    <form method="post" action="{{ self_url }}/update?next={{ self_url }}" class="card">
+      {{ csrf() }}
+      <h3>Edit</h3>
+      <label>Requirement %<input type="number" name="requirement" min="1" max="100" value="{{ placement.requirement }}"></label>
+      <label>Showcase video<input type="url" name="video_url" maxlength="255" value="{{ placement.video_url }}" placeholder="https://"></label>
+      <div><button class="button" type="submit">Save</button></div>
+      <p class="muted small">Lowering the requirement does not touch records already reviewed.</p>
+    </form>
+    <form method="post" action="{{ self_url }}/move?next={{ self_url }}" class="card">
+      {{ csrf() }}
+      <h3>Move</h3>
+      <label>Position<input type="number" name="position" min="1" value="{{ placement.position }}"></label>
+      <div class="bulk-actions">
+        <button class="button" type="submit">Move</button>
+        <button class="button danger" formaction="{{ self_url }}/remove" data-confirm="Take this level off the list? Its records are kept and count again if it is placed later.">Remove from the list</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</section>
+<section class="stack">
+  <div class="section-head"><h2>Records</h2>{% if row.approved + row.pending > page.records|length %}<a href="/admin/demonlist/records?status=&amp;level={{ placement.level_id }}">All records for this level</a>{% endif %}</div>
+  <form method="post" data-bulk>
+    {{ csrf() }}
+    {{ record_table(page.records, reviewer, show_level=False) }}
+    {% if reviewer %}{{ record_actions() }}{% endif %}
+  </form>
+  {% if reviewer %}
+  <form method="post" action="/admin/demonlist/records/add?next={{ self_url }}" class="card">
+    {{ csrf() }}
+    <input type="hidden" name="placement_id" value="{{ placement.id }}">
+    <h3>Add a record</h3>
+    <div class="split three">
+      <label>User id<input type="number" name="user_id" min="1" inputmode="numeric" required></label>
+      <label>Percent<input type="number" name="percent" min="{{ placement.requirement }}" max="100" value="100"></label>
+      <label>Video<input type="url" name="video_url" maxlength="255" placeholder="https://"></label>
+    </div>
+    <div><button class="button" type="submit">Add record</button></div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -5,6 +5,7 @@ from web.api import dependencies
 
 from . import comments
 from . import dashboard
+from . import demonlist
 from . import flags
 from . import levels
 from . import moderation
@@ -34,6 +35,7 @@ def create_router() -> APIRouter:
     router.include_router(songs.router)
     router.include_router(rewards.router)
     router.include_router(packs.router)
+    router.include_router(demonlist.router)
     router.include_router(roles.router)
     router.include_router(settings.router)
     router.include_router(status.router)

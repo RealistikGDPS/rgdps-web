@@ -17,6 +17,7 @@ from poltergeist_core.resources import FlagStatus
 from poltergeist_core.resources import LeaderboardKind
 from poltergeist_core.resources import LoginSource
 from poltergeist_core.resources import ModTarget
+from poltergeist_core.resources import RecordStatus
 from poltergeist_core.resources import SongSource
 from poltergeist_core.resources import StatsSource
 from poltergeist_core.resources import UserKind
@@ -116,6 +117,7 @@ _BAN = {
     BanType.UPLOAD: "Upload",
     BanType.LEADERBOARD: "Leaderboard",
     BanType.CREATOR: "Creator",
+    BanType.DEMON_LIST: "Demon list",
 }
 _KIND = {UserKind.PLAYER: "Player", UserKind.BOT: "Bot"}
 _VISIBILITY = {
@@ -143,6 +145,8 @@ _MOD_TARGET = {
     ModTarget.ROLE: "Role",
     ModTarget.SERVER: "Server",
     ModTarget.FLAG: "Flag",
+    ModTarget.DEMON_LIST_PLACEMENT: "List placement",
+    ModTarget.DEMON_LIST_RECORD: "List record",
 }
 _FLAG_KIND = {
     FlagKind.STATS_CEILING: "Stats over ceiling",
@@ -153,6 +157,12 @@ _FLAG_STATUS = {
     FlagStatus.OPEN: "Open",
     FlagStatus.DISMISSED: "Dismissed",
     FlagStatus.ACTIONED: "Actioned",
+}
+_RECORD_STATUS = {
+    RecordStatus.PENDING: "Pending",
+    RecordStatus.APPROVED: "Approved",
+    RecordStatus.REJECTED: "Rejected",
+    RecordStatus.SUPERSEDED: "Superseded",
 }
 _LOGIN_SOURCE = {LoginSource.GAME: "Game", LoginSource.WEB: "Website"}
 _STATS_SOURCE = {
@@ -337,6 +347,10 @@ def flag_kind(value: FlagKind) -> str:
 
 def flag_status(value: FlagStatus) -> str:
     return _FLAG_STATUS[value]
+
+
+def record_status(value: RecordStatus) -> str:
+    return _RECORD_STATUS[value]
 
 
 def login_source(value: LoginSource) -> str:

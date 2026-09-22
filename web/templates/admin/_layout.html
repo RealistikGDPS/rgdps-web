@@ -23,6 +23,7 @@
       <a href="/admin/songs" class="{% if here.startswith('/admin/songs') %}active{% endif %}" data-key="s"><span>Songs</span><kbd>s</kbd></a>
       <a href="/admin/rewards" class="{% if here.startswith('/admin/rewards') %}active{% endif %}" data-key="r"><span>Rewards</span><kbd>r</kbd></a>
       <a href="/admin/packs" class="{% if here.startswith('/admin/packs') %}active{% endif %}" data-key="p"><span>Packs</span><kbd>p</kbd></a>
+      {% if viewer.may(permission.DEMON_LIST_MANAGE) or viewer.may(permission.DEMON_LIST_REVIEW) %}<a href="/admin/demonlist" class="{% if here.startswith('/admin/demonlist') %}active{% endif %}" data-key="n"><span>Demon list</span><kbd>n</kbd></a>{% endif %}
       <span class="rail-group">Server</span>
       <a href="/admin/roles" class="{% if here.startswith('/admin/roles') %}active{% endif %}" data-key="e"><span>Roles</span><kbd>e</kbd></a>
       {% if viewer.may(permission.ADMIN_SETTINGS) %}<a href="/admin/settings" class="{% if here.startswith('/admin/settings') %}active{% endif %}" data-key="g"><span>Settings</span><kbd>g</kbd></a>{% endif %}

@@ -1,0 +1,72 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import csrf, glyph, when with context %}
+{% from "admin/_widgets.html" import empty, user_link %}
+{% set manager = viewer.may(permission.DEMON_LIST_MANAGE) %}
+{% set count = placements.rows|length %}
+{% block admin_title %}Demon list{% endblock %}
+{% block admin_eyebrow %}Content · {{ count }} placed, {{ placements.pending|number }} records pending{% endblock %}
+{% block admin_heading %}Demon list{% endblock %}
+{% block admin_actions %}
+<nav class="tabs" aria-label="Demon list"><a class="active" href="/admin/demonlist">Placements</a><a href="/admin/demonlist/records">Records{% if placements.pending %} ({{ placements.pending|number }}){% endif %}</a></nav>
+<a class="button small ghost" href="/demonlist" target="_blank" rel="noopener">View the list</a>
+{% endblock %}
+{% block admin %}
+{% if not manager %}<p class="alert">Read only: your roles lack <code>demon_list.manage</code>.</p>{% endif %}
+<section class="split wide-left align-start">
+  <div class="stack">
+    <div class="card table-card">
+      <table class="board dense">
+        <thead><tr><th class="rank">#</th><th class="sticky">Level</th><th>Creator</th><th class="num">Points</th><th class="num">Req.</th><th class="num">Approved</th><th class="num">Pending</th><th>Video</th><th>Placed</th>{% if manager %}<th>Position</th><th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for row in placements.rows %}
+        {% set placement = row.placement %}
+        <tr class="level-row {% if row.level %}{{ row.level.difficulty|difficulty_class }}{% endif %}">
+          <td class="rank">{{ placement.position }}</td>
+          <td class="sticky"><a class="name" href="/admin/demonlist/{{ placement.id }}">{% if row.level %}{{ row.level.name }}{% else %}<span class="muted">deleted level #{{ placement.level_id }}</span>{% endif %}</a>{% if not row.level %} <span class="chip warn">remove</span>{% endif %}</td>
+          <td>{% if row.level %}{{ user_link(row.creator, row.level.user_id) }}{% else %}<span class="muted">–</span>{% endif %}</td>
+          <td class="num">{{ glyph("demons", "demons") }}{{ row.points|number }}</td>
+          <td class="num">{{ placement.requirement }}%</td>
+          <td class="num">{{ row.approved|number }}</td>
+          <td class="num">{% if row.pending %}<a href="/admin/demonlist/records?status=pending&amp;level={{ placement.level_id }}">{{ row.pending|number }}</a>{% else %}<span class="muted">0</span>{% endif %}</td>
+          <td>{% if placement.video_url %}<a href="{{ placement.video_url }}" rel="noopener" target="_blank">Watch</a>{% else %}<span class="muted">–</span>{% endif %}</td>
+          <td class="muted">{{ when(placement.updated_at) }} by {{ user_link(row.added_by, placement.added_by_user_id) }}</td>
+          {% if manager %}
+          <td>
+            <form method="post" action="/admin/demonlist/{{ placement.id }}/move" class="row-form">
+              {{ csrf() }}
+              <input type="number" name="position" min="1" max="{{ count }}" value="{{ placement.position }}" aria-label="New position for {{ placement.id }}">
+              <button class="button small ghost" type="submit">Move</button>
+            </form>
+          </td>
+          <td>
+            <form method="post" action="/admin/demonlist/{{ placement.id }}/remove" class="row-form">
+              {{ csrf() }}
+              <button class="button small danger" type="submit" data-confirm="Take this level off the list? Its records are kept and count again if it is placed later.">Remove</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        {{ empty("Nothing is placed yet.", 11 if manager else 9) }}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">Moving a level to a position shifts everything between the two places by one. Points follow the position: the top placement earns {{ site.demon_list_top_points|number }}, each one below {{ site.demon_list_decay_percent }}% of the one above.</p>
+  </div>
+  {% if manager %}
+  <form method="post" action="/admin/demonlist/place" class="card">
+    {{ csrf() }}
+    <h3>Place a level</h3>
+    <label>Level id<input type="number" name="level_id" min="1" inputmode="numeric" required></label>
+    <div class="split">
+      <label>Position<input type="number" name="position" min="1" max="{{ count + 1 }}" placeholder="bottom"></label>
+      <label>Requirement %<input type="number" name="requirement" min="1" max="100" value="100"></label>
+    </div>
+    <label>Showcase video<input type="url" name="video_url" maxlength="255" placeholder="https://"></label>
+    <button class="button" type="submit">Place level</button>
+    <p class="muted small">A level that was on the list before comes back with its records.</p>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

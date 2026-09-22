@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import glyph, manage, pager with context %}
+{% block title %}Demon list standings · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <h1>Demon list</h1>
+    <p class="muted">List points across every approved record. Reorders and settings apply straight away.</p>
+  </div>
+</section>
+<nav class="tabs" aria-label="Demon list">
+  <a href="/demonlist">{{ glyph("demons", "demons") }} List</a>
+  <a href="/demonlist/standings" class="active">{{ glyph("players") }} Standings</a>
+</nav>
+<div class="card table-card">
+  <table class="board">
+    <thead><tr><th class="rank">#</th><th>Player</th><th class="num">Points</th><th class="num">Records</th></tr></thead>
+    <tbody>
+    {% for entry in board.entries %}
+      <tr>
+        <td class="rank">{{ entry.rank }}</td>
+        <td><a class="name" href="/users/{{ entry.user.id }}">{{ entry.user.username }}</a>{{ manage("/admin/users/" ~ entry.user.id) }}</td>
+        <td class="num">{{ glyph("demons", "demons") }} {{ entry.points|number }}</td>
+        <td class="num">{{ entry.records|number }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">Nobody has an approved record yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(board.page + 1, board.size, board.total) }}
+{% endblock %}

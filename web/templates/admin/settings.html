@@ -57,6 +57,19 @@
       <label>Secret coins<input type="number" name="official_secret_coins" min="0" max="100000" value="{{ site.official_secret_coins }}"></label>
     </div>
   </fieldset>
+  <fieldset class="card switches" {% if not editable %}disabled{% endif %}>
+    <h3>Demon list</h3>
+    <label class="switch-row">
+      <span><strong>Record submissions</strong><small>Players may submit records on listed levels. The list itself stays visible.</small></span>
+      <span class="switch"><input type="checkbox" name="demon_list_submissions_enabled" value="true" {% if site.demon_list_submissions_enabled %}checked{% endif %}><span class="track"><span class="knob"></span></span></span>
+    </label>
+    <p class="muted small">The top placement is worth the top points; every placement below it is worth the decay percent of the one above, so with 250 and 90% the second place earns 225 and the tenth 97. Points are worked out on every page load, so changes apply at once.</p>
+    <div class="split three">
+      <label>Submissions per player per day<input type="number" name="demon_list_daily_submissions" min="1" max="1000" value="{{ site.demon_list_daily_submissions }}"></label>
+      <label>Top points<input type="number" name="demon_list_top_points" min="1" max="100000" value="{{ site.demon_list_top_points }}"></label>
+      <label>Decay percent<input type="number" name="demon_list_decay_percent" min="1" max="100" value="{{ site.demon_list_decay_percent }}"></label>
+    </div>
+  </fieldset>
   {% if editable %}<div><button class="button" type="submit">Save settings</button></div>{% endif %}
 </form>
 {% endblock %}

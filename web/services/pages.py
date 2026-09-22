@@ -2,10 +2,12 @@ from dataclasses import dataclass
 
 from poltergeist_core.resources import Snapshot
 from poltergeist_core.services import analytics
+from poltergeist_core.services import demon_list
 from poltergeist_core.services import is_error
 from poltergeist_core.services import levels
 from poltergeist_core.services import users
 from poltergeist_core.services._common import AbstractContext
+from poltergeist_core.services.demon_list import PlayerSummary
 from poltergeist_core.services.levels import LevelListing
 from poltergeist_core.services.users import PublicProfile
 from poltergeist_core.services.users import UserError
@@ -30,6 +32,7 @@ class HomePayload:
 class ProfilePayload:
     profile: PublicProfile
     level_count: int
+    demon_list: PlayerSummary
 
 
 async def home(ctx: AbstractContext) -> HomePayload:
@@ -62,5 +65,7 @@ async def profile(
         return public
 
     return ProfilePayload(
-        profile=public, level_count=await ctx.levels.count_by_user(user.id)
+        profile=public,
+        level_count=await ctx.levels.count_by_user(user.id),
+        demon_list=await demon_list.player_summary(ctx, user_id=user.id),
     )

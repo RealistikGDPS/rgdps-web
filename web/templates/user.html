@@ -62,6 +62,35 @@
   </div>
 </section>
 
+{% set listed = payload.demon_list %}
+<section>
+  <div class="section-head"><h2>Demon list</h2><a href="/demonlist/standings">Standings</a></div>
+  <div class="card">
+    <p class="chips">
+      <span class="chip plain">{{ glyph("demons", "demons") }} {{ listed.points|number }} points</span>
+      {% if listed.rank %}<span class="chip">#{{ listed.rank|number }} on the list</span>{% endif %}
+      <span class="chip plain">{{ listed.records|length }} {% if listed.records|length == 1 %}record{% else %}records{% endif %}</span>
+    </p>
+    {% if listed.records %}
+    <table class="board">
+      <thead><tr><th>Level</th><th class="num">Percent</th><th class="num">Points</th><th>Proof</th></tr></thead>
+      <tbody>
+      {% for entry in listed.records %}
+      <tr>
+        <td>{% if entry.level %}<a class="name" href="/demonlist/{{ entry.level.id }}">{{ entry.level.name }}</a>{% else %}<span class="muted">deleted level</span>{% endif %}{% if entry.placement.deleted_at %} <span class="tag off">off the list</span>{% else %} <span class="muted small">#{{ entry.placement.position }}</span>{% endif %}</td>
+        <td class="num">{{ entry.record.percent }}%</td>
+        <td class="num">{{ entry.points|number }}</td>
+        <td>{% if entry.record.video_url %}<a href="{{ entry.record.video_url }}" rel="noopener" target="_blank">Video</a>{% else %}<span class="muted">–</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No approved demon list records yet.</p>
+    {% endif %}
+  </div>
+</section>
+
 <section>
   <div class="section-head"><h2>Icons</h2></div>
   <div class="icon-wall">

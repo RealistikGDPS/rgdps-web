@@ -1,5 +1,6 @@
 from . import comments
 from . import dashboard
+from . import demonlist
 from . import flags
 from . import levels
 from . import moderation

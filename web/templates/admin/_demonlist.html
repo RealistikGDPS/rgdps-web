@@ -1,0 +1,44 @@
+{% from "_macros.html" import when with context %}
+{% from "admin/_widgets.html" import check, select_all, bulk_bar, drawer, empty, user_link %}
+
+{% macro record_table(rows, reviewer, show_level=True) %}
+{% set columns = 11 if show_level else 10 %}
+<div class="card table-card">
+  <table class="board dense">
+    <thead><tr>{% if reviewer %}{{ select_all() }}{% endif %}<th class="mono">Id</th><th>Status</th><th class="sticky">Player</th>{% if show_level %}<th>Level</th>{% endif %}<th class="num">Percent</th><th class="num">Points</th><th>Proof</th><th>Notes</th><th>Submitted</th><th>Reviewed</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+    {% set record = row.record %}
+    <tr>
+      {% if reviewer %}{{ check(record.id) }}{% endif %}
+      <td class="mono">{{ record.id }}</td>
+      <td><span class="chip record-{{ record.status }}">{{ record.status|record_status }}</span></td>
+      <td class="sticky">{{ user_link(row.user, record.user_id) }}{% if row.previous_best is not none %} <span class="muted small" title="Their approved record on this level">has {{ row.previous_best }}%</span>{% endif %}</td>
+      {% if show_level %}
+      <td>{% if row.placement %}<a href="/admin/demonlist/{{ row.placement.id }}">{% if row.level %}{{ row.level.name }}{% else %}level #{{ row.placement.level_id }}{% endif %}</a> {% if row.placement.deleted_at %}<span class="tag off">off list</span>{% else %}<span class="muted small">#{{ row.placement.position }}</span>{% endif %}{% else %}<span class="muted">#{{ record.placement_id }}</span>{% endif %}</td>
+      {% endif %}
+      <td class="num">{{ record.percent }}%{% if row.placement and record.percent < row.placement.requirement %} <span class="chip warn" title="Below the current requirement">low</span>{% endif %}</td>
+      <td class="num">{% if record.status == "approved" %}{{ row.points|number }}{% else %}<span class="muted">{{ row.points|number }}</span>{% endif %}</td>
+      <td>{% if record.video_url %}<a href="{{ record.video_url }}" rel="noopener" target="_blank">Video</a>{% endif %}{% if record.raw_footage_url %} <a href="{{ record.raw_footage_url }}" rel="noopener" target="_blank">Raw</a>{% endif %}{% if not record.video_url and not record.raw_footage_url %}<span class="chip warn">none</span>{% endif %}</td>
+      <td class="small">{% if record.notes %}<span title="{{ record.notes }}">{{ record.notes|truncate(60) }}</span>{% else %}<span class="muted">–</span>{% endif %}</td>
+      <td class="muted">{{ when(record.submitted_at) }}</td>
+      <td class="muted small">{% if record.reviewed_at %}{{ when(record.reviewed_at) }} by {{ user_link(row.reviewer, record.reviewed_by_user_id) }}{% if record.review_note %}<br><em>{{ record.review_note }}</em>{% endif %}{% else %}–{% endif %}</td>
+    </tr>
+    {% else %}
+    {{ empty("No records match.", columns) }}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+
+{% macro record_actions() %}
+{% call bulk_bar() %}
+  <button class="button small" formaction="/admin/demonlist/records/approve{{ back_query(request) }}">Approve</button>
+  {% call drawer("Reject") %}
+    <label class="field grow"><span>Reason</span><input name="note" maxlength="255" placeholder="Shown to the player"></label>
+    <button class="button small danger" formaction="/admin/demonlist/records/reject{{ back_query(request) }}">Reject selected</button>
+  {% endcall %}
+  <button class="button small ghost danger" formaction="/admin/demonlist/records/delete{{ back_query(request) }}" data-confirm="Delete the selected records? Approved ones stop counting.">Delete</button>
+{% endcall %}
+{% endmacro %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, error_box, glyph, manage, when with context %}
+{% set detail = page.detail %}
+{% set level = detail.level %}
+{% set placement = detail.placement %}
+{% block title %}#{{ placement.position }} {{ level.name }} · Demon list · {{ site_name }}{% endblock %}
+{% block content %}
+<p><a href="/demonlist">&larr; Demon list</a></p>
+<section class="card level placement-head-card {{ level.difficulty|difficulty_class }}">
+  <div class="placement-title">
+    <span class="placement-rank">#{{ placement.position }}</span>
+    <div>
+      <h1>{{ level.name }}{{ manage("/admin/demonlist/" ~ placement.id) }}</h1>
+      <p class="muted">by {% if detail.creator %}<a href="/users/{{ detail.creator.id }}">{{ detail.creator.username }}</a>{% else %}an unknown player{% endif %} · level id <code>{{ level.id }}</code></p>
+    </div>
+  </div>
+  <p class="level-meta">
+    <span class="badge diff">{{ level.difficulty|difficulty }}</span>
+    {% if level.stars %}<span>{{ glyph("stars", "stars") }} {{ level.stars }}</span>{% endif %}
+    <span>{{ glyph("demons", "demons") }} {{ detail.points|number }} points</span>
+    <span class="muted">{{ placement.requirement }}% or more counts</span>
+    {% if placement.video_url %}<a href="{{ placement.video_url }}" rel="noopener" target="_blank">Showcase video</a>{% endif %}
+  </p>
+</section>
+
+<section class="two-up align-start">
+  <div class="card">
+    <h3>Records</h3>
+    <table class="board">
+      <thead><tr><th class="rank">#</th><th>Player</th><th class="num">Percent</th><th class="num">Points</th><th>Proof</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for entry in detail.records %}
+      <tr>
+        <td class="rank">{{ loop.index }}</td>
+        <td>{% if entry.user %}<a class="name" href="/users/{{ entry.user.id }}">{{ entry.user.username }}</a>{% else %}<span class="muted">unknown player</span>{% endif %}</td>
+        <td class="num">{{ entry.record.percent }}%</td>
+        <td class="num">{{ entry.points|number }}</td>
+        <td>{% if entry.record.video_url %}<a href="{{ entry.record.video_url }}" rel="noopener" target="_blank">Video</a>{% else %}<span class="muted">–</span>{% endif %}</td>
+        <td class="muted">{{ when(entry.record.reviewed_at or entry.record.submitted_at) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">No approved records yet. Be the first.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card form-card-inline">
+    <h3>Submit a record</h3>
+    {% if not viewer %}
+      <p class="muted"><a href="/login?next=/demonlist/{{ level.id }}">Log in</a> to submit a record for this level.</p>
+    {% else %}
+      {% if page.approved %}<p class="alert success">Your approved record: <strong>{{ page.approved.percent }}%</strong>. Submit again only if you have beaten it.</p>{% endif %}
+      {% if page.rejected %}<p class="alert warning">Your last submission ({{ page.rejected.percent }}%) was rejected{% if page.rejected.review_note %}: {{ page.rejected.review_note }}{% else %}.{% endif %}</p>{% endif %}
+      {% if page.pending %}
+        <p class="alert">Your {{ page.pending.percent }}% record is waiting for review{% if page.pending.video_url %} (<a href="{{ page.pending.video_url }}" rel="noopener" target="_blank">video</a>){% endif %}.</p>
+        <form method="post" action="/demonlist/records/{{ page.pending.id }}/withdraw?next=/demonlist/{{ level.id }}">
+          {{ csrf() }}
+          <button class="button ghost small" type="submit">Withdraw it</button>
+        </form>
+      {% elif not site.demon_list_submissions_enabled %}
+        <p class="alert">Record submissions are closed at the moment.</p>
+      {% else %}
+        {% if error is defined %}{{ error_box(error) }}{% endif %}
+        <form method="post" action="/demonlist/{{ level.id }}/records">
+          {{ csrf() }}
+          <label>Percent<input name="percent" type="number" inputmode="numeric" min="{{ placement.requirement }}" max="100" value="{{ percent }}" required></label>
+          <label>Video link<input name="video_url" type="url" maxlength="255" value="{{ video_url }}" placeholder="https://"></label>
+          <label>Raw footage link<input name="raw_footage_url" type="url" maxlength="255" value="{{ raw_footage_url }}" placeholder="https://"></label>
+          <label>Notes for the reviewers<textarea name="notes" maxlength="500" rows="3">{{ notes }}</textarea></label>
+          <button class="button wide" type="submit">Submit record</button>
+        </form>
+        <p class="muted small">Proof is optional but records without a video are unlikely to be approved. Up to {{ site.demon_list_daily_submissions }} submissions per day.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

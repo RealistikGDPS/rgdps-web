@@ -3,6 +3,7 @@ from collections.abc import Callable
 from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 
 from poltergeist_core.services import ServiceError
 from poltergeist_core.services import is_error
@@ -37,6 +38,12 @@ class BulkOutcome:
         refused = sum(self.refusals.values())
 
         return f"{text} {refused} refused: {reasons}."
+
+
+def member[E: StrEnum](kind: type[E], text: str) -> E | None:
+    """A select's "any" option posts an empty value, which no enum holds."""
+
+    return kind(text) if text in kind else None
 
 
 def selection(ids: Sequence[int] | None) -> WebError.OnSuccess[list[int]]:

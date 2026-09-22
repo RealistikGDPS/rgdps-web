@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from poltergeist_core.resources import FlagKind
 from poltergeist_core.resources import FlagStatus
@@ -37,12 +36,6 @@ class FlagListing:
     total: int
 
 
-def _member[E: StrEnum](kind: type[E], text: str) -> E | None:
-    """A select's "any" option posts an empty value, which no enum holds."""
-
-    return kind(text) if text in kind else None
-
-
 def _linked_ids(flag: UserFlag) -> list[int]:
     if flag.evidence is None:
         return []
@@ -59,8 +52,8 @@ async def listing(
     page: int,
 ) -> FlagListing:
     index = forms.page_index(page)
-    status_filter = _member(FlagStatus, status)
-    kind_filter = _member(FlagKind, kind)
+    status_filter = _common.member(FlagStatus, status)
+    kind_filter = _common.member(FlagKind, kind)
     user_id = int(user) if user.strip().isdecimal() else None
 
     found = await ctx.flags.list_page(

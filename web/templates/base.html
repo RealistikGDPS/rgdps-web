@@ -29,6 +29,7 @@
   <nav class="menu">
     <a href="/" {% if request.url.path == "/" %}class="active"{% endif %}>Home</a>
     <a href="/leaderboards/stars" {% if request.url.path.startswith("/leaderboards") %}class="active"{% endif %}>Leaderboards</a>
+    <a href="/demonlist" {% if request.url.path.startswith("/demonlist") %}class="active"{% endif %}>Demon list</a>
     <a href="/downloads" {% if request.url.path == "/downloads" %}class="active"{% endif %}>Downloads</a>
     <a href="/tools" {% if request.url.path.startswith("/tools") %}class="active"{% endif %}>Tools</a>
     {% if viewer and viewer.is_operator %}<a class="admin-link{% if request.url.path.startswith("/admin") %} active{% endif %}" href="/admin">Admin</a>{% endif %}

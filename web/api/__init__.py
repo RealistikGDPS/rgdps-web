@@ -29,6 +29,7 @@ from web.icons import renderer
 from . import account
 from . import admin
 from . import auth
+from . import demonlist
 from . import health
 from . import icons
 from . import pages
@@ -182,6 +183,7 @@ def create_routes(app: FastAPI) -> None:
     app.include_router(auth.router)
     app.include_router(account.router)
     app.include_router(tools.router)
+    app.include_router(demonlist.router)
     app.include_router(admin.create_router())
     app.include_router(icons.router)
     app.include_router(health.router)

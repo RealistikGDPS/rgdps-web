@@ -42,6 +42,10 @@ async def save(
     official_moons: Annotated[int, Form()] = 0,
     official_demons: Annotated[int, Form()] = 0,
     official_secret_coins: Annotated[int, Form()] = 0,
+    demon_list_submissions_enabled: Annotated[bool, Form()] = False,
+    demon_list_daily_submissions: Annotated[int, Form()] = 10,
+    demon_list_top_points: Annotated[int, Form()] = 250,
+    demon_list_decay_percent: Annotated[int, Form()] = 90,
 ) -> Response:
     wanted = ServerSettings(
         registration_enabled=registration_enabled,
@@ -58,6 +62,10 @@ async def save(
         official_moons=official_moons,
         official_demons=official_demons,
         official_secret_coins=official_secret_coins,
+        demon_list_submissions_enabled=demon_list_submissions_enabled,
+        demon_list_daily_submissions=demon_list_daily_submissions,
+        demon_list_top_points=demon_list_top_points,
+        demon_list_decay_percent=demon_list_decay_percent,
     )
 
     response.unwrap(

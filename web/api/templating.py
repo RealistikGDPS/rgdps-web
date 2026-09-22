@@ -21,6 +21,7 @@ from poltergeist_core.resources import FlagStatus
 from poltergeist_core.resources import LeaderboardKind
 from poltergeist_core.resources import ModTarget
 from poltergeist_core.resources import Permission
+from poltergeist_core.resources import RecordStatus
 from poltergeist_core.resources import UserKind
 from poltergeist_core.resources import UserStats
 from poltergeist_core.utilities import clock
@@ -198,6 +199,7 @@ _environment.globals.update(
     mod_targets=list(ModTarget),
     flag_kinds=list(FlagKind),
     flag_statuses=list(FlagStatus),
+    record_statuses=list(RecordStatus),
     quest_items=list(QuestItem),
     chest_types=[ChestType.SMALL, ChestType.LARGE],
     reward_items=list(_REWARD_ITEMS),
@@ -239,6 +241,7 @@ _environment.filters.update(
     platform=labels.platform,
     flag_kind=labels.flag_kind,
     flag_status=labels.flag_status,
+    record_status=labels.record_status,
     login_source=labels.login_source,
     stats_source=labels.stats_source,
     song_source=labels.song_source,

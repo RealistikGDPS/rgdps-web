@@ -111,6 +111,13 @@ input[data-search] { padding-right: 2.4rem; background-image: url("data:image/sv
 .chip.ban-upload { border-color: #ff9d5c; color: #ff9d5c; }
 .chip.ban-leaderboard { border-color: var(--moons); color: var(--moons); }
 .chip.ban-creator { border-color: var(--cp); color: var(--cp); }
+.chip.ban-demon_list { border-color: var(--demons); color: var(--demons); text-transform: none; }
+.chip.record-pending { border-color: var(--stars); color: var(--stars); }
+.chip.record-approved { border-color: var(--cp); color: var(--cp); }
+.chip.record-rejected { border-color: var(--demons); color: var(--demons); }
+.chip.record-superseded { border-color: var(--line); color: var(--muted); }
+.board .row-form { display: flex; gap: 0.4rem; align-items: center; margin: 0; }
+.board .row-form input[type="number"] { width: 4.5rem; padding: 0.3rem 0.5rem; }
 .chip.flag-stats_ceiling { border-color: var(--demons); color: var(--demons); }
 .chip.flag-score_implausible { border-color: #ff9d5c; color: #ff9d5c; }
 .chip.flag-alt_account { border-color: var(--moons); color: var(--moons); }

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import glyph, manage with context %}
+{% block title %}Demon list · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="section-head">
+  <div>
+    <h1>Demon list</h1>
+    <p class="muted">The hardest levels on the server, ordered by the list team. Beat one, submit your record, earn list points.</p>
+  </div>
+  {{ manage("/admin/demonlist") }}
+</section>
+<nav class="tabs" aria-label="Demon list">
+  <a href="/demonlist" class="active">{{ glyph("demons", "demons") }} List</a>
+  <a href="/demonlist/standings">{{ glyph("players") }} Standings</a>
+</nav>
+<div class="demonlist">
+{% for entry in listing.entries %}
+  {% set level = entry.level %}
+  <a class="card level placement {{ level.difficulty|difficulty_class }}" href="/demonlist/{{ level.id }}">
+    <span class="placement-rank">#{{ entry.placement.position }}</span>
+    <span class="placement-body">
+      <span class="placement-head">
+        <strong class="placement-name">{{ level.name }}</strong>
+        <span class="badge diff">{{ level.difficulty|difficulty }}</span>
+        {% if entry.placement.requirement < 100 %}<span class="tag">{{ entry.placement.requirement }}% list</span>{% endif %}
+      </span>
+      <span class="muted small">by {% if entry.creator %}{{ entry.creator.username }}{% else %}an unknown player{% endif %} · {{ entry.record_count|number }} {% if entry.record_count == 1 %}record{% else %}records{% endif %}</span>
+    </span>
+    <span class="placement-points">{{ glyph("demons", "demons") }} {{ entry.points|number }}<small>points</small></span>
+  </a>
+{% else %}
+  <div class="card"><p class="muted">Nothing has been placed on the list yet.</p></div>
+{% endfor %}
+</div>
+{% endblock %}
