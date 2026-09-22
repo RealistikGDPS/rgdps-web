@@ -5,7 +5,19 @@
 {% set placement = detail.placement %}
 {% block title %}#{{ placement.position }} {{ level.name }} · Demon list · {{ site_name }}{% endblock %}
 {% block content %}
-<p><a href="/demonlist">&larr; Demon list</a></p>
+<div class="demonlist-layout">
+<aside class="demonlist-nav card" aria-label="Demon list">
+  <p class="eyebrow"><a href="/demonlist">Demon list</a></p>
+  <ol class="demonlist-nav-list">
+    {% for entry in page.listing.entries %}
+    <li{% if entry.level.id == level.id %} class="current" aria-current="page"{% endif %}>
+      <a href="/demonlist/{{ entry.level.id }}"><span class="nav-rank">#{{ entry.placement.position }}</span><span class="nav-name">{{ entry.level.name }}</span><span class="nav-points muted">{{ entry.points|number }}</span></a>
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="small"><a href="/demonlist/standings">Standings &rarr;</a></p>
+</aside>
+<div class="demonlist-main">
 <section class="card level placement-head-card {{ level.difficulty|difficulty_class }}">
   <div class="placement-title">
     <span class="placement-rank">#{{ placement.position }}</span>
@@ -23,9 +35,10 @@
   </p>
 </section>
 
-<section class="two-up align-start">
-  <div class="card">
+<section class="records-layout">
+  <div class="card records-card">
     <h3>Records</h3>
+    <div class="table-scroll">
     <table class="board">
       <thead><tr><th class="rank">#</th><th>Player</th><th class="num">Percent</th><th class="num">Points</th><th>Proof</th><th>Date</th></tr></thead>
       <tbody>
@@ -36,13 +49,14 @@
         <td class="num">{{ entry.record.percent }}%</td>
         <td class="num">{{ entry.points|number }}</td>
         <td>{% if entry.record.video_url %}<a href="{{ entry.record.video_url }}" rel="noopener" target="_blank">Video</a>{% else %}<span class="muted">–</span>{% endif %}</td>
-        <td class="muted">{{ when(entry.record.reviewed_at or entry.record.submitted_at) }}</td>
+        <td class="muted nowrap">{{ when(entry.record.reviewed_at or entry.record.submitted_at) }}</td>
       </tr>
       {% else %}
       <tr><td colspan="6" class="muted">No approved records yet. Be the first.</td></tr>
       {% endfor %}
       </tbody>
     </table>
+    </div>
   </div>
   <div class="card form-card-inline">
     <h3>Submit a record</h3>
@@ -74,4 +88,6 @@
     {% endif %}
   </div>
 </section>
+</div>
+</div>
 {% endblock %}

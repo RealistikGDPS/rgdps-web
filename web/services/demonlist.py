@@ -5,6 +5,7 @@ from poltergeist_core.resources import RecordStatus
 from poltergeist_core.services import demon_list
 from poltergeist_core.services import is_error
 from poltergeist_core.services._common import AbstractContext
+from poltergeist_core.services.demon_list import DemonList
 from poltergeist_core.services.demon_list import DemonListError
 from poltergeist_core.services.demon_list import PlacementDetail
 
@@ -15,6 +16,8 @@ class LevelPage:
     form can say why it is closed before the service refuses."""
 
     detail: PlacementDetail
+    # The whole list, for the side navigation.
+    listing: DemonList
     pending: DemonListRecord | None
     approved: DemonListRecord | None
     rejected: DemonListRecord | None
@@ -28,8 +31,12 @@ async def level_page(
     if is_error(detail):
         return detail
 
+    listing = await demon_list.overview(ctx)
+
     if viewer_user_id is None:
-        return LevelPage(detail=detail, pending=None, approved=None, rejected=None)
+        return LevelPage(
+            detail=detail, listing=listing, pending=None, approved=None, rejected=None
+        )
 
     placement_id = detail.placement.id
     records = ctx.demon_list_records
@@ -40,6 +47,7 @@ async def level_page(
 
     return LevelPage(
         detail=detail,
+        listing=listing,
         pending=await records.find_pending(placement_id, viewer_user_id),
         approved=await records.find_approved(placement_id, viewer_user_id),
         # A rejection is only worth showing while it is the viewer's latest word.
