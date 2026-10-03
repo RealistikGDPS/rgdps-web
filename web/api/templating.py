@@ -166,9 +166,10 @@ def _icon_url_builder(renderer: IconRenderer) -> IconUrl:
 
         glow = 1 if stats.glow else 0
 
+        # Icons are served as immutable; bump `v` whenever the rendering changes.
         return (
             f"/icons/{resolved}/{_icon_id(stats, resolved)}/{stats.colour1}/"
-            f"{stats.colour2}/{stats.colour3}/{glow}.png"
+            f"{stats.colour2}/{stats.colour3}/{glow}.png?v=2"
         )
 
     return icon_url

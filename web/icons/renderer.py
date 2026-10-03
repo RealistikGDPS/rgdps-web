@@ -232,7 +232,14 @@ class IconRenderer:
     def _render_simple(
         self, request: IconRequest, sheet: SpriteSheet, tints: _Tints
     ) -> Image.Image | None:
-        return _compose(sheet, frames.layers(request.kind, request.icon_id), tints)
+        image = _compose(sheet, frames.layers(request.kind, request.icon_id), tints)
+
+        if image is None:
+            return None
+
+        # The untrimmed canvas pads some forms unevenly, which offsets and
+        # shrinks them once scaled to fit.
+        return image.crop(image.getbbox() or (0, 0, image.width, image.height))
 
     def _render_animated(
         self, request: IconRequest, sheet: SpriteSheet, tints: _Tints
