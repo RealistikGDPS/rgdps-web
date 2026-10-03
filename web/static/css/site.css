@@ -260,7 +260,7 @@ a.placement:hover { text-decoration: none; border-color: var(--brand); }
 .board .icon-cell { width: 3.5rem; padding-right: 0; }
 .board .name { font-weight: 700; color: var(--text); }
 .board .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-.icon { image-rendering: auto; display: block; }
+.icon { image-rendering: auto; display: block; object-fit: contain; }
 .pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
 .pager a:last-child { text-align: right; }
 
