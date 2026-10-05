@@ -10,8 +10,9 @@
   <div>
     <h1>{{ player.username }}{{ manage("/admin/users/" ~ player.id) }}</h1>
     <p class="chips">
-      {% if profile.mod_level|mod_level %}<span class="chip mod">{{ profile.mod_level|mod_level }}</span>{% endif %}
-      {% for role in profile.roles if role.name != "default" %}<span class="chip">{{ role.name|replace("_", " ") }}</span>{% endfor %}
+      {% set mod = profile.mod_level|mod_level %}
+      {% if mod %}<span class="chip mod">{{ mod }}</span>{% endif %}
+      {% for role in profile.roles if role.name != "default" and role.name|replace("_", " ")|lower != mod|lower %}<span class="chip">{{ role.name|replace("_", " ") }}</span>{% endfor %}
       <span class="chip plain">#{{ player.id }}</span>
     </p>
     <p class="muted">Joined {{ player.registered_at|date }}{% if player.last_seen_at %} · last seen {{ player.last_seen_at|age }} ago{% endif %}</p>
