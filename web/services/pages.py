@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
+from poltergeist_core.resources import LevelOrder
+from poltergeist_core.resources import LevelSearch
 from poltergeist_core.resources import Snapshot
 from poltergeist_core.services import analytics
 from poltergeist_core.services import demon_list
 from poltergeist_core.services import is_error
-from poltergeist_core.services import levels
 from poltergeist_core.services import users
 from poltergeist_core.services._common import AbstractContext
 from poltergeist_core.services.demon_list import PlayerSummary
@@ -46,8 +47,32 @@ async def home(ctx: AbstractContext) -> HomePayload:
             series.chart("Levels uploaded", snapshot.uploads, _CHART_DAYS, today),
             series.chart("Players seen", snapshot.active_users, _CHART_DAYS, today),
         ],
-        featured=await levels.featured(ctx, page=0, size=_HOME_LEVELS),
-        recent=await levels.recent(ctx, page=0, size=_HOME_LEVELS),
+        featured=await _showcase(ctx, LevelOrder.FEATURED, featured=True),
+        recent=await _showcase(ctx, LevelOrder.UPLOADED),
+    )
+
+
+async def _showcase(
+    ctx: AbstractContext, order: LevelOrder, *, featured: bool = False
+) -> LevelListing:
+    search = LevelSearch(
+        order=order,
+        page=0,
+        size=_HOME_LEVELS,
+        featured=featured,
+        player_creators_only=True,
+    )
+    found = await ctx.levels.search(search)
+    creators = await ctx.users.find_many_by_ids(
+        list({level.user_id for level in found})
+    )
+
+    return LevelListing(
+        levels=found,
+        creators={creator.id: creator for creator in creators},
+        page=search.page,
+        size=search.size,
+        total=len(found),
     )
 
 

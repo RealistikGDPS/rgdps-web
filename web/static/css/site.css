@@ -119,7 +119,7 @@ h1 .manage { font-size: 0.7rem; }
 
 /* Cards */
 .card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; }
-.card h3 { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.08em; }
+.card h3, .card .card-label { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.08em; text-shadow: none; }
 a.card { display: block; color: inherit; }
 a.card:hover { text-decoration: none; border-color: var(--brand); }
 

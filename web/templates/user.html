@@ -42,7 +42,7 @@
 
 <section class="two-up">
   <div class="card">
-    <h3>Rankings</h3>
+    <h2 class="card-label">Rankings</h2>
     <ul class="ranks">
       {% for option in leaderboard_kinds %}
       <li>
@@ -53,7 +53,7 @@
     </ul>
   </div>
   <div class="card">
-    <h3>Demons</h3>
+    <h2 class="card-label">Demons</h2>
     <ul class="bars compact">
       {% for label, count in [("Easy", stats.demons_easy), ("Medium", stats.demons_medium), ("Hard", stats.demons_hard), ("Insane", stats.demons_insane), ("Extreme", stats.demons_extreme)] %}
       <li><span class="bar-label">{{ label }}</span><span class="bar-track"><span class="bar-fill demon" style="width: {{ (count / stats.demons * 100) if stats.demons else 0 }}%"></span></span><span class="bar-value">{{ count|number }}</span></li>
