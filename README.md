@@ -1,5 +1,8 @@
 # RealistikGDPS website
 
+<img width="1756" height="758" alt="image" src="https://github.com/user-attachments/assets/8a5d038e-4f9d-4252-85d3-dc8801c6aa06" />
+
+
 The public site of [RealistikGDPS](https://rgdps.ussr.pl): downloads,
 leaderboards, server statistics, player profiles with rendered icons, account
 management (registration, login, password and username changes), the level
