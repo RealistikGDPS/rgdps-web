@@ -60,7 +60,7 @@ async def _showcase(
         page=0,
         size=_HOME_LEVELS,
         featured=featured,
-        player_creators_only=True,
+        exclude_creator_ids=tuple(await ctx.users.list_non_player_ids()),
     )
     found = await ctx.levels.search(search)
     creators = await ctx.users.find_many_by_ids(
