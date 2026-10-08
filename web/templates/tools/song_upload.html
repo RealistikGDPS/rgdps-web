@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, error_box with context %}
+{% block title %}Song upload · {{ site_name }}{% endblock %}
+{% block content %}
+<section class="form-card card">
+  <p class="eyebrow">Tools</p>
+  <h1>Song upload</h1>
+  <p class="muted">Upload an MP3 and it becomes a custom song on this server. Use its id in the editor to put it in a level.</p>
+  {% if error is defined %}{{ error_box(error) }}{% endif %}
+  <form method="post" action="/tools/song-upload" enctype="multipart/form-data">
+    {{ csrf() }}
+    <label>Song name<input name="name" value="{{ song_name }}" maxlength="128" required></label>
+    <label>Artist<input name="artist" value="{{ artist }}" maxlength="64" required></label>
+    <label>MP3 file<input name="file" type="file" accept=".mp3,audio/mpeg" required></label>
+    {% if turnstile_site_key %}
+    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {% endif %}
+    <button class="button wide" type="submit">Upload song</button>
+  </form>
+  <p class="muted small">Up to {{ site.song_upload_daily_limit }} uploads per day and {{ max_bytes|megabytes }} per file. Only MP3 files are accepted. Uploads carry your name, so only upload music you may share.</p>
+  <p><a class="button ghost" href="/tools">All tools</a></p>
+</section>
+{% endblock %}

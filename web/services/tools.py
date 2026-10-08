@@ -7,7 +7,7 @@ from web.errors import WebError
 
 
 class Tool(StrEnum):
-    SONG_REUPLOAD = "song-reupload"
+    SONG_UPLOAD = "song-upload"
     LEVEL_REUPLOAD = "level-reupload"
 
 
@@ -17,13 +17,12 @@ class ToolCard:
     title: str
     blurb: str
     enabled: bool
-    ready: bool
 
 
 def enabled(site: ServerSettings, tool: Tool) -> bool:
     match tool:
-        case Tool.SONG_REUPLOAD:
-            return site.song_reupload_enabled
+        case Tool.SONG_UPLOAD:
+            return site.song_upload_enabled
         case Tool.LEVEL_REUPLOAD:
             return site.level_reupload_enabled
 
@@ -38,11 +37,10 @@ def require(site: ServerSettings, tool: Tool) -> WebError.OnSuccess[None]:
 def cards(site: ServerSettings) -> list[ToolCard]:
     return [
         ToolCard(
-            tool=Tool.SONG_REUPLOAD,
-            title="Song reupload",
-            blurb="Bring a song onto the server so it can be used in your levels.",
-            enabled=enabled(site, Tool.SONG_REUPLOAD),
-            ready=False,
+            tool=Tool.SONG_UPLOAD,
+            title="Song upload",
+            blurb="Upload an MP3 to the server so it can be used in your levels.",
+            enabled=enabled(site, Tool.SONG_UPLOAD),
         ),
         ToolCard(
             tool=Tool.LEVEL_REUPLOAD,
@@ -52,6 +50,5 @@ def cards(site: ServerSettings) -> list[ToolCard]:
                 "published by the reupload bot."
             ),
             enabled=enabled(site, Tool.LEVEL_REUPLOAD),
-            ready=True,
         ),
     ]

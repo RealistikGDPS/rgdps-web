@@ -118,6 +118,7 @@ _BAN = {
     BanType.LEADERBOARD: "Leaderboard",
     BanType.CREATOR: "Creator",
     BanType.DEMON_LIST: "Demon list",
+    BanType.SONG_UPLOAD: "Song upload",
 }
 _KIND = {UserKind.PLAYER: "Player", UserKind.BOT: "Bot"}
 _VISIBILITY = {

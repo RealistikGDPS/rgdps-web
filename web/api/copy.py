@@ -9,6 +9,7 @@ from poltergeist_core.services.packs import PackError
 from poltergeist_core.services.reuploads import ReuploadError
 from poltergeist_core.services.roles import RoleError
 from poltergeist_core.services.server_settings import ServerSettingsError
+from poltergeist_core.services.song_uploads import SongUploadError
 from poltergeist_core.services.songs import SongError
 from poltergeist_core.services.timely import TimelyError
 from poltergeist_core.services.users import UserError
@@ -105,6 +106,7 @@ def explain(error: ServiceError) -> str:
             | PackError.NOT_PERMITTED
             | LevelError.NOT_PERMITTED
             | ReuploadError.NOT_PERMITTED
+            | SongUploadError.NOT_PERMITTED
             | CommentError.NOT_PERMITTED
             | SongError.NOT_ALLOWED
             | ServerSettingsError.NOT_PERMITTED
@@ -141,7 +143,8 @@ def explain(error: ServiceError) -> str:
             return (
                 "Those settings were not accepted: download links must be HTTPS "
                 "or a path on this site, the reupload bot must be an existing "
-                "user, the daily reupload and demon list allowances at least 1, "
+                "user, the daily reupload, upload and demon list allowances at "
+                "least 1, "
                 "the top list points at least 1 and the decay between 1 and 100."
             )
         case ReuploadError.DISABLED:
@@ -170,6 +173,18 @@ def explain(error: ServiceError) -> str:
             return "That level is too large for this server."
         case ReuploadError.INVALID:
             return "That level could not be read."
+        case SongUploadError.DISABLED:
+            return "Song uploads are switched off at the moment."
+        case SongUploadError.BANNED:
+            return "This account cannot upload songs."
+        case SongUploadError.INVALID:
+            return "Give the song a name and an artist of up to 128 and 64 characters."
+        case SongUploadError.NOT_MP3:
+            return "That file is not an MP3."
+        case SongUploadError.TOO_LARGE:
+            return "That file is too large for this server."
+        case SongUploadError.RATE_LIMITED:
+            return "You have used today's song uploads. Try again tomorrow."
         case (
             AdministrationError.INVALID
             | ModerationError.INVALID
