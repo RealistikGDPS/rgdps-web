@@ -7,7 +7,9 @@ The public site of [RealistikGDPS](https://rgdps.ussr.pl): downloads,
 leaderboards, server statistics, player profiles with rendered icons, account
 management (registration, login, password and username changes), the level
 reupload tool (an official level copied under the bot account behind a
-Turnstile challenge and a per-player daily allowance), the demon list (a
+Turnstile challenge and a per-player daily allowance), the song upload tool
+(a player's MP3 stored in object storage as a custom song, behind the same
+challenge and its own allowance), the demon list (a
 hand-ordered list of the hardest levels at `/demonlist`, with player-submitted
 records that moderators approve and website-only list points that decay by
 position) and, under `/admin`, the control room for operators.
