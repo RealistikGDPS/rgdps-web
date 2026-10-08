@@ -112,6 +112,7 @@ input[data-search] { padding-right: 2.4rem; background-image: url("data:image/sv
 .chip.ban-leaderboard { border-color: var(--moons); color: var(--moons); }
 .chip.ban-creator { border-color: var(--cp); color: var(--cp); }
 .chip.ban-demon_list { border-color: var(--demons); color: var(--demons); text-transform: none; }
+.chip.ban-song_upload { border-color: #ff9d5c; color: #ff9d5c; text-transform: none; }
 .chip.record-pending { border-color: var(--stars); color: var(--stars); }
 .chip.record-approved { border-color: var(--cp); color: var(--cp); }
 .chip.record-rejected { border-color: var(--demons); color: var(--demons); }

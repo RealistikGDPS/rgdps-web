@@ -1,6 +1,6 @@
 {% extends "admin/_layout.html" %}
 {% from "_macros.html" import csrf with context %}
-{% from "admin/_widgets.html" import facts %}
+{% from "admin/_widgets.html" import drawer, facts %}
 {% block admin_title %}{{ song.name }}{% endblock %}
 {% block admin_eyebrow %}Content · song #{{ song.id }} · {{ song.source|song_source }}{% endblock %}
 {% block admin_heading %}{{ song.name }}{% endblock %}
@@ -20,8 +20,23 @@
   </div>
   <div class="card">
     <h3>Facts</h3>
-    {{ facts([("State", "disabled" if song.disabled_at else "live"), ("Uploaded by", ("#" ~ song.uploaded_by_user_id) if song.uploaded_by_user_id else "server"), ("Artist id", song.artist_id), ("Size", song.size_bytes|megabytes)]) }}
+    {{ facts([("State", "disabled" if song.disabled_at else "live"), ("Uploaded by", ('<a href="/admin/users/' ~ song.uploaded_by_user_id ~ '">#' ~ song.uploaded_by_user_id ~ '</a>')|safe if song.uploaded_by_user_id else "server"), ("Artist id", song.artist_id), ("Size", song.size_bytes|megabytes)]) }}
     {% if song.url %}<p><audio controls preload="none" src="{{ song.url }}"></audio></p>{% endif %}
+    {% if song.uploaded_by_user_id %}
+    <form method="post" class="bulk-inline">
+      {{ csrf() }}
+      <input type="hidden" name="ids" value="{{ song.uploaded_by_user_id }}">
+      <input type="hidden" name="ban_type" value="song_upload">
+      <div class="bulk-actions">
+        {% call drawer("Ban uploader from song upload") %}
+          <label class="field"><span>Days</span><input type="number" name="days" min="1" max="3650" value="30"></label>
+          <label class="field inline"><input type="checkbox" name="permanent" value="true"><span>Permanent</span></label>
+          <label class="field grow"><span>Reason</span><input name="reason" maxlength="255" placeholder="Shown to the player"></label>
+          <button class="button small danger" formaction="/admin/users/ban?next=/admin/songs/{{ song.id }}">Ban</button>
+        {% endcall %}
+      </div>
+    </form>
+    {% endif %}
   </div>
 </section>
 {% endblock %}
